@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
-import { schedule, getCurrentBlockIndex } from "@/data/schedule";
-import TimelineBlock from "@/components/TimelineBlock";
-import Legend from "@/components/Legend";
-import ScheduleHeader from "@/components/ScheduleHeader";
+import { useEffect, useState } from "react"
+import { schedule, getCurrentBlockIndex } from "@/data/schedule"
+import TimelineBlock from "@/components/TimelineBlock"
+import Legend from "@/components/Legend"
+import ScheduleHeader from "@/components/ScheduleHeader"
 
 const Index = () => {
-  const [currentIdx, setCurrentIdx] = useState(getCurrentBlockIndex(schedule));
+  const [currentIdx, setCurrentIdx] = useState(getCurrentBlockIndex(schedule))
 
   useEffect(() => {
-    const iv = setInterval(() => setCurrentIdx(getCurrentBlockIndex(schedule)), 60000);
-    return () => clearInterval(iv);
-  }, []);
+    const iv = setInterval(
+      () => setCurrentIdx(getCurrentBlockIndex(schedule)),
+      60000,
+    )
+    return () => clearInterval(iv)
+  }, [])
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,7 +37,7 @@ const Index = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
