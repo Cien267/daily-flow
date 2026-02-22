@@ -1,32 +1,57 @@
-import { useState } from "react";
+import { useState } from "react"
 import {
-  Coffee, Brain, Briefcase, Leaf, Rocket, Heart,
-  BookOpen, Radio, Sparkles, Moon, Zap, Clock
-} from "lucide-react";
+  Coffee,
+  Brain,
+  Briefcase,
+  Leaf,
+  Rocket,
+  Heart,
+  BookOpen,
+  Radio,
+  Sparkles,
+  Moon,
+  Zap,
+  Clock,
+} from "lucide-react"
 import {
-  ScheduleBlock, categoryConfig, energyMap,
-  getDurationMinutes, formatDuration, getCurrentProgress, getCurrentBlockIndex, schedule
-} from "@/data/schedule";
+  ScheduleBlock,
+  categoryConfig,
+  energyMap,
+  getDurationMinutes,
+  formatDuration,
+  getCurrentProgress,
+  getCurrentBlockIndex,
+  schedule,
+} from "@/data/schedule"
 
 const iconMap: Record<string, React.ElementType> = {
-  Coffee, Brain, Briefcase, Leaf, Rocket, Heart, BookOpen, Radio, Sparkles,
-};
+  Coffee,
+  Brain,
+  Briefcase,
+  Leaf,
+  Rocket,
+  Heart,
+  BookOpen,
+  Radio,
+  Sparkles,
+}
 
 interface Props {
-  block: ScheduleBlock;
-  index: number;
-  isCurrent: boolean;
+  block: ScheduleBlock
+  index: number
+  isCurrent: boolean
 }
 
 export default function TimelineBlock({ block, index, isCurrent }: Props) {
-  const [hovered, setHovered] = useState(false);
-  const cat = categoryConfig[block.category];
-  const energy = energyMap[block.energy_level];
-  const duration = getDurationMinutes(block.start, block.end);
-  const progress = isCurrent ? getCurrentProgress(block) : 0;
-  const Icon = iconMap[cat.icon] || Moon;
-  const isSleep = block.category === "health" && block.energy_level === "restore";
-  const isDeep = block.focus_type === "deep" || block.focus_type === "focused";
+  const [hovered, setHovered] = useState(false)
+  const cat = categoryConfig[block.category]
+  const energy = energyMap[block.energy_level]
+  const duration = getDurationMinutes(block.start, block.end)
+  const progress = isCurrent ? getCurrentProgress(block) : 0
+  const Icon = iconMap[cat.icon] || Moon
+  const isSleep =
+    block.category === "health" && block.energy_level === "restore"
+  const isDeep = block.focus_type === "deep" || block.focus_type === "focused"
 
   return (
     <div
@@ -36,7 +61,9 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
     >
       {/* Time column */}
       <div className="w-16 md:w-20 shrink-0 pt-3 text-right">
-        <span className="font-mono text-sm text-muted-foreground">{block.start}</span>
+        <span className="font-mono text-sm text-muted-foreground">
+          {block.start}
+        </span>
       </div>
 
       {/* Timeline dot & line */}
@@ -45,8 +72,14 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
           className="z-10 mt-3 h-3 w-3 rounded-full border-2 transition-transform duration-200"
           style={{
             borderColor: `hsl(var(${cat.cssVar}))`,
-            backgroundColor: isCurrent ? `hsl(var(${cat.cssVar}))` : "hsl(var(--background))",
-            transform: isCurrent ? "scale(1.4)" : hovered ? "scale(1.2)" : "scale(1)",
+            backgroundColor: isCurrent
+              ? `hsl(var(${cat.cssVar}))`
+              : "hsl(var(--background))",
+            transform: isCurrent
+              ? "scale(1.4)"
+              : hovered
+                ? "scale(1.2)"
+                : "scale(1)",
           }}
         />
         {index < schedule.length - 1 && (
@@ -58,12 +91,16 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
       <div
         className={`mb-3 flex-1 rounded-lg border p-4 transition-all duration-200 ${
           isCurrent
-            ? "border-primary/40 bg-card shadow-lg shadow-primary/5"
+            ? "border-primary/40 bg-card shadow-[0px_5px_15px_#4169e1b3]"
             : isSleep
-            ? "border-border/50 bg-muted/30 opacity-60"
-            : "border-border bg-card hover:border-muted-foreground/20 hover:bg-accent/50"
+              ? "border-border/50 bg-muted/30 opacity-60"
+              : "border-border bg-card hover:border-muted-foreground/20 hover:bg-accent/50"
         } ${isDeep && !isCurrent ? "border-l-2" : ""}`}
-        style={isDeep && !isCurrent ? { borderLeftColor: `hsl(var(${cat.cssVar}))` } : {}}
+        style={
+          isDeep && !isCurrent
+            ? { borderLeftColor: `hsl(var(${cat.cssVar}))` }
+            : {}
+        }
       >
         {/* Progress bar for current */}
         {isCurrent && (
@@ -119,7 +156,9 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
         {/* Description - shown on hover or if current */}
         <div
           className={`overflow-hidden transition-all duration-200 ${
-            hovered || isCurrent ? "mt-2.5 max-h-20 opacity-100" : "max-h-0 opacity-0"
+            hovered || isCurrent
+              ? "mt-2.5 max-h-20 opacity-100"
+              : "max-h-0 opacity-0"
           }`}
         >
           <p className="text-xs leading-relaxed text-muted-foreground">
@@ -139,5 +178,5 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
         </div>
       </div>
     </div>
-  );
+  )
 }
