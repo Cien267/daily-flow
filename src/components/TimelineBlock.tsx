@@ -95,12 +95,8 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
             : isSleep
               ? "border-border/50 bg-muted/30 opacity-60"
               : "border-border bg-card hover:border-muted-foreground/20 hover:bg-accent/50"
-        } ${isDeep && !isCurrent ? "border-l-2" : ""}`}
-        style={
-          isDeep && !isCurrent
-            ? { borderLeftColor: `hsl(var(${cat.cssVar}))` }
-            : {}
-        }
+        } ${!isCurrent ? "border-l-2" : ""}`}
+        style={!isCurrent ? { borderLeftColor: `hsl(var(${cat.cssVar}))` } : {}}
       >
         {/* Progress bar for current */}
         {isCurrent && (
