@@ -1,6 +1,7 @@
 import { CalendarDays, Globe } from "lucide-react";
 import { getCurrentTimeUTC7 } from "@/data/schedule";
 import { useEffect, useState } from "react";
+import PipButton from "./PipButton";
 
 export default function ScheduleHeader() {
   const [time, setTime] = useState(getCurrentTimeUTC7());
@@ -25,9 +26,12 @@ export default function ScheduleHeader() {
         <CalendarDays size={12} />
         <span>{today}</span>
       </div>
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">
-        Daily Schedule
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Daily Schedule
+        </h1>
+        <PipButton />
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">
         Optimized productivity blocks · Current time{" "}
         <span className="font-mono text-foreground">{time}</span>
