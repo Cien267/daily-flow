@@ -1,6 +1,7 @@
 import { CalendarDays, Globe } from "lucide-react";
 import { getCurrentTimeUTC7 } from "@/data/schedule";
 import { useEffect, useState } from "react";
+import PipButton from "./PipButton";
 
 export default function ScheduleHeader() {
   const [time, setTime] = useState(getCurrentTimeUTC7());
