@@ -3,6 +3,7 @@ import { schedule, getCurrentBlockIndex } from "@/data/schedule"
 import TimelineBlock from "@/components/TimelineBlock"
 import Legend from "@/components/Legend"
 import ScheduleHeader from "@/components/ScheduleHeader"
+import PomodoroTimer from "@/components/PomodoroTimer"
 
 const Index = () => {
   const [currentIdx, setCurrentIdx] = useState(getCurrentBlockIndex(schedule))
@@ -19,6 +20,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-4 py-10 md:py-16">
         <ScheduleHeader />
+        <PomodoroTimer />
         <Legend />
 
         <div className="mt-8">
