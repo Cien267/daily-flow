@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Play, Pause, RotateCcw, SkipForward, MonitorPlay, X, Timer } from "lucide-react"
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  SkipForward,
+  MonitorPlay,
+  X,
+  Timer,
+} from "lucide-react"
 
 type PomodoroMode = "work" | "short_break" | "long_break"
 
@@ -152,8 +160,10 @@ export default function PomodoroTimer() {
           ${formatTime(timeLeft)}
         </span>
         <div style="display:flex;gap:4px;margin-top:2px;">
-          ${Array.from({ length: DEFAULT_CONFIG.sessions_before_long }, (_, i) =>
-            `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % DEFAULT_CONFIG.sessions_before_long || (completedSessions > 0 && completedSessions % DEFAULT_CONFIG.sessions_before_long === 0) ? color : "#27272a"};"></div>`
+          ${Array.from(
+            { length: DEFAULT_CONFIG.sessions_before_long },
+            (_, i) =>
+              `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % DEFAULT_CONFIG.sessions_before_long || (completedSessions > 0 && completedSessions % DEFAULT_CONFIG.sessions_before_long === 0) ? color : "#27272a"};"></div>`,
           ).join("")}
         </div>
         <span style="font-size:10px;color:#52525b;">${isRunning ? "Running" : "Paused"} · ${completedSessions} sessions</span>
@@ -167,7 +177,9 @@ export default function PomodoroTimer() {
 
   const openPip = useCallback(async () => {
     if (!("documentPictureInPicture" in window)) {
-      alert("Your browser doesn't support Document Picture-in-Picture. Try Chrome 116+.")
+      alert(
+        "Your browser doesn't support Document Picture-in-Picture. Try Chrome 116+.",
+      )
       return
     }
     try {
@@ -211,7 +223,10 @@ export default function PomodoroTimer() {
   }, [])
 
   // --- UI colors by mode ---
-  const modeStyles: Record<PomodoroMode, { ring: string; bg: string; text: string; badge: string }> = {
+  const modeStyles: Record<
+    PomodoroMode,
+    { ring: string; bg: string; text: string; badge: string }
+  > = {
     work: {
       ring: "stroke-pink-500",
       bg: "bg-pink-500/10",
@@ -238,12 +253,14 @@ export default function PomodoroTimer() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="rounded-xl border border-border bg-card p-6 mt-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Timer className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-semibold text-foreground">Pomodoro</span>
+          <span className="text-sm font-semibold text-foreground">
+            Pomodoro
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -255,7 +272,11 @@ export default function PomodoroTimer() {
             }`}
             title={pipOpen ? "Close PiP" : "Open PiP"}
           >
-            {pipOpen ? <X className="h-3 w-3" /> : <MonitorPlay className="h-3 w-3" />}
+            {pipOpen ? (
+              <X className="h-3 w-3" />
+            ) : (
+              <MonitorPlay className="h-3 w-3" />
+            )}
             {pipOpen ? "Close" : "PiP"}
           </button>
         </div>
@@ -281,15 +302,24 @@ export default function PomodoroTimer() {
       {/* Timer ring */}
       <div className="flex flex-col items-center gap-4">
         <div className="relative">
-          <svg width="140" height="140" viewBox="0 0 140 140" className="-rotate-90">
+          <svg
+            width="140"
+            height="140"
+            viewBox="0 0 140 140"
+            className="-rotate-90"
+          >
             <circle
-              cx="70" cy="70" r={radius}
+              cx="70"
+              cy="70"
+              r={radius}
               fill="none"
               className="stroke-muted/30"
               strokeWidth="6"
             />
             <circle
-              cx="70" cy="70" r={radius}
+              cx="70"
+              cy="70"
+              r={radius}
               fill="none"
               className={styles.ring}
               strokeWidth="6"
@@ -323,7 +353,11 @@ export default function PomodoroTimer() {
             className={`rounded-full p-3 transition-colors ${styles.bg} ${styles.text} hover:opacity-80`}
             title={isRunning ? "Pause" : "Start"}
           >
-            {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+            {isRunning ? (
+              <Pause className="h-5 w-5" />
+            ) : (
+              <Play className="h-5 w-5 ml-0.5" />
+            )}
           </button>
           <button
             onClick={skip}
@@ -337,17 +371,24 @@ export default function PomodoroTimer() {
         {/* Session dots */}
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            {Array.from({ length: DEFAULT_CONFIG.sessions_before_long }, (_, i) => (
-              <div
-                key={i}
-                className={`h-2 w-2 rounded-full transition-colors ${
-                  i < completedSessions % DEFAULT_CONFIG.sessions_before_long ||
-                  (completedSessions > 0 && completedSessions % DEFAULT_CONFIG.sessions_before_long === 0)
-                    ? styles.text.replace("text-", "bg-")
-                    : "bg-muted/40"
-                }`}
-              />
-            ))}
+            {Array.from(
+              { length: DEFAULT_CONFIG.sessions_before_long },
+              (_, i) => (
+                <div
+                  key={i}
+                  className={`h-2 w-2 rounded-full transition-colors ${
+                    i <
+                      completedSessions % DEFAULT_CONFIG.sessions_before_long ||
+                    (completedSessions > 0 &&
+                      completedSessions %
+                        DEFAULT_CONFIG.sessions_before_long ===
+                        0)
+                      ? styles.text.replace("text-", "bg-")
+                      : "bg-muted/40"
+                  }`}
+                />
+              ),
+            )}
           </div>
           <span className="text-[10px] text-muted-foreground">
             {completedSessions} session{completedSessions !== 1 ? "s" : ""}
