@@ -20,8 +20,6 @@ import {
   getDurationMinutes,
   formatDuration,
   getCurrentProgress,
-  getCurrentBlockIndex,
-  schedule,
 } from "@/data/schedule"
 
 const iconMap: Record<string, React.ElementType> = {
@@ -40,9 +38,10 @@ interface Props {
   block: ScheduleBlock
   index: number
   isCurrent: boolean
+  total: number
 }
 
-export default function TimelineBlock({ block, index, isCurrent }: Props) {
+export default function TimelineBlock({ block, index, isCurrent, total }: Props) {
   const [hovered, setHovered] = useState(false)
   const cat = categoryConfig[block.category]
   const energy = energyMap[block.energy_level]
@@ -82,7 +81,7 @@ export default function TimelineBlock({ block, index, isCurrent }: Props) {
                 : "scale(1)",
           }}
         />
-        {index < schedule.length - 1 && (
+        {index < total - 1 && (
           <div className="w-px flex-1 bg-border" />
         )}
       </div>
