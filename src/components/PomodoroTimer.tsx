@@ -7,7 +7,9 @@ import {
   MonitorPlay,
   X,
   Timer,
+  Settings,
 } from "lucide-react"
+import { useLocalStorage } from "@/lib/useLocalStorage"
 
 type PomodoroMode = "work" | "short_break" | "long_break"
 
@@ -16,6 +18,7 @@ interface PomodoroConfig {
   short_break: number
   long_break: number
   sessions_before_long: number
+  autoStart: boolean
 }
 
 const DEFAULT_CONFIG: PomodoroConfig = {
@@ -23,6 +26,7 @@ const DEFAULT_CONFIG: PomodoroConfig = {
   short_break: 5 * 60,
   long_break: 15 * 60,
   sessions_before_long: 4,
+  autoStart: false,
 }
 
 const MODE_LABELS: Record<PomodoroMode, string> = {
@@ -38,15 +42,17 @@ const MODE_COLORS: Record<PomodoroMode, string> = {
 }
 
 export default function PomodoroTimer() {
+  const [config, setConfig] = useLocalStorage<PomodoroConfig>("pomodoro.config.v1", DEFAULT_CONFIG)
   const [mode, setMode] = useState<PomodoroMode>("work")
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_CONFIG.work)
+  const [timeLeft, setTimeLeft] = useState(config.work)
   const [isRunning, setIsRunning] = useState(false)
-  const [completedSessions, setCompletedSessions] = useState(0)
+  const [completedSessions, setCompletedSessions] = useLocalStorage("pomodoro.sessions", 0)
+  const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
   const pipIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const totalTime = DEFAULT_CONFIG[mode]
+  const totalTime = config[mode]
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
   // Timer tick
