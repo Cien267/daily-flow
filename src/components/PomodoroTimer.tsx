@@ -42,11 +42,17 @@ const MODE_COLORS: Record<PomodoroMode, string> = {
 }
 
 export default function PomodoroTimer() {
-  const [config, setConfig] = useLocalStorage<PomodoroConfig>("pomodoro.config.v1", DEFAULT_CONFIG)
+  const [config, setConfig] = useLocalStorage<PomodoroConfig>(
+    "pomodoro.config.v1",
+    DEFAULT_CONFIG,
+  )
   const [mode, setMode] = useState<PomodoroMode>("work")
   const [timeLeft, setTimeLeft] = useState(config.work)
   const [isRunning, setIsRunning] = useState(false)
-  const [completedSessions, setCompletedSessions] = useLocalStorage("pomodoro.sessions", 0)
+  const [completedSessions, setCompletedSessions] = useLocalStorage(
+    "pomodoro.sessions",
+    0,
+  )
   const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
@@ -71,28 +77,40 @@ export default function PomodoroTimer() {
     return () => clearInterval(iv)
   }, [isRunning])
 
-  const switchMode = useCallback((newMode: PomodoroMode, autoRun = false) => {
-    setMode(newMode)
-    setTimeLeft(config[newMode])
-    setIsRunning(autoRun)
-  }, [config])
+  const switchMode = useCallback(
+    (newMode: PomodoroMode, autoRun = false) => {
+      setMode(newMode)
+      setTimeLeft(config[newMode])
+      setIsRunning(autoRun)
+    },
+    [config],
+  )
 
   const handleComplete = useCallback(() => {
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
-      osc.connect(gain); gain.connect(ctx.destination)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
       osc.frequency.value = 800
       gain.gain.value = 0.1
-      osc.start(); osc.stop(ctx.currentTime + 0.3)
-    } catch {}
+      osc.start()
+      osc.stop(ctx.currentTime + 0.3)
+    } catch (e: any) {
+      console.error("Error occurred while playing sound:", e)
+    }
 
     const auto = config.autoStart
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break", auto)
+      switchMode(
+        newSessions % config.sessions_before_long === 0
+          ? "long_break"
+          : "short_break",
+        auto,
+      )
     } else {
       switchMode("work", auto)
     }
@@ -107,14 +125,20 @@ export default function PomodoroTimer() {
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break")
+      switchMode(
+        newSessions % config.sessions_before_long === 0
+          ? "long_break"
+          : "short_break",
+      )
     } else {
       switchMode("work")
     }
   }
 
   // Sync timeLeft when config changes for the current mode (if not running)
-  useEffect(() => { if (!isRunning) setTimeLeft(config[mode]) }, [config, mode]) // eslint-disable-line
+  useEffect(() => {
+    if (!isRunning) setTimeLeft(config[mode])
+  }, [config, mode]) // eslint-disable-line
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
@@ -282,7 +306,11 @@ export default function PomodoroTimer() {
             }`}
             title={pipOpen ? "Close PiP" : "Open PiP"}
           >
-            {pipOpen ? <X className="h-3 w-3" /> : <MonitorPlay className="h-3 w-3" />}
+            {pipOpen ? (
+              <X className="h-3 w-3" />
+            ) : (
+              <MonitorPlay className="h-3 w-3" />
+            )}
             {pipOpen ? "Close" : "PiP"}
           </button>
         </div>
@@ -291,36 +319,73 @@ export default function PomodoroTimer() {
       {showSettings && (
         <div className="mb-6 rounded-lg border border-border bg-muted/20 p-4 space-y-3">
           <div className="grid grid-cols-3 gap-3">
-            {([
-              ["work", "Focus (min)"],
-              ["short_break", "Short (min)"],
-              ["long_break", "Long (min)"],
-            ] as const).map(([k, label]) => (
+            {(
+              [
+                ["work", "Focus (min)"],
+                ["short_break", "Short (min)"],
+                ["long_break", "Long (min)"],
+              ] as const
+            ).map(([k, label]) => (
               <label key={k} className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
-                <input type="number" min={1} max={120}
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {label}
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={120}
                   value={Math.round(config[k] / 60)}
-                  onChange={(e) => setConfig({ ...config, [k]: Math.max(1, Number(e.target.value)) * 60 })}
-                  className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      [k]: Math.max(1, Number(e.target.value)) * 60,
+                    })
+                  }
+                  className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+                />
               </label>
             ))}
           </div>
           <div className="grid grid-cols-2 gap-3 items-center">
             <label className="flex flex-col gap-1">
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions/long break</span>
-              <input type="number" min={2} max={10} value={config.sessions_before_long}
-                onChange={(e) => setConfig({ ...config, sessions_before_long: Math.max(2, Number(e.target.value)) })}
-                className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Sessions/long break
+              </span>
+              <input
+                type="number"
+                min={2}
+                max={10}
+                value={config.sessions_before_long}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    sessions_before_long: Math.max(2, Number(e.target.value)),
+                  })
+                }
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              />
             </label>
             <label className="flex items-center gap-2 mt-4">
-              <input type="checkbox" checked={config.autoStart}
-                onChange={(e) => setConfig({ ...config, autoStart: e.target.checked })}
-                className="accent-primary" />
-              <span className="text-xs text-foreground">Auto-start next session</span>
+              <input
+                type="checkbox"
+                checked={config.autoStart}
+                onChange={(e) =>
+                  setConfig({ ...config, autoStart: e.target.checked })
+                }
+                className="accent-primary"
+              />
+              <span className="text-xs text-foreground">
+                Auto-start next session
+              </span>
             </label>
           </div>
-          <button onClick={() => { setConfig(DEFAULT_CONFIG); setCompletedSessions(0) }}
-            className="text-[10px] text-muted-foreground hover:text-foreground underline">
+          <button
+            onClick={() => {
+              setConfig(DEFAULT_CONFIG)
+              setCompletedSessions(0)
+            }}
+            className="text-[10px] text-muted-foreground hover:text-foreground underline"
+          >
             Reset to defaults
           </button>
         </div>
@@ -415,24 +480,18 @@ export default function PomodoroTimer() {
         {/* Session dots */}
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
-            {Array.from(
-              { length: config.sessions_before_long },
-              (_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 w-2 rounded-full transition-colors ${
-                    i <
-                      completedSessions % config.sessions_before_long ||
-                    (completedSessions > 0 &&
-                      completedSessions %
-                        config.sessions_before_long ===
-                        0)
-                      ? styles.text.replace("text-", "bg-")
-                      : "bg-muted/40"
-                  }`}
-                />
-              ),
-            )}
+            {Array.from({ length: config.sessions_before_long }, (_, i) => (
+              <div
+                key={i}
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  i < completedSessions % config.sessions_before_long ||
+                  (completedSessions > 0 &&
+                    completedSessions % config.sessions_before_long === 0)
+                    ? styles.text.replace("text-", "bg-")
+                    : "bg-muted/40"
+                }`}
+              />
+            ))}
           </div>
           <span className="text-[10px] text-muted-foreground">
             {completedSessions} session{completedSessions !== 1 ? "s" : ""}
