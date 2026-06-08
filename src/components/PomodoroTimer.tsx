@@ -263,6 +263,17 @@ export default function PomodoroTimer() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowSettings((s) => !s)}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
+              showSettings
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}
+            title="Settings"
+          >
+            <Settings className="h-3 w-3" />
+          </button>
+          <button
             onClick={pipOpen ? closePip : openPip}
             className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
               pipOpen
@@ -271,15 +282,49 @@ export default function PomodoroTimer() {
             }`}
             title={pipOpen ? "Close PiP" : "Open PiP"}
           >
-            {pipOpen ? (
-              <X className="h-3 w-3" />
-            ) : (
-              <MonitorPlay className="h-3 w-3" />
-            )}
+            {pipOpen ? <X className="h-3 w-3" /> : <MonitorPlay className="h-3 w-3" />}
             {pipOpen ? "Close" : "PiP"}
           </button>
         </div>
       </div>
+
+      {showSettings && (
+        <div className="mb-6 rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              ["work", "Focus (min)"],
+              ["short_break", "Short (min)"],
+              ["long_break", "Long (min)"],
+            ] as const).map(([k, label]) => (
+              <label key={k} className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+                <input type="number" min={1} max={120}
+                  value={Math.round(config[k] / 60)}
+                  onChange={(e) => setConfig({ ...config, [k]: Math.max(1, Number(e.target.value)) * 60 })}
+                  className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+              </label>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3 items-center">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions/long break</span>
+              <input type="number" min={2} max={10} value={config.sessions_before_long}
+                onChange={(e) => setConfig({ ...config, sessions_before_long: Math.max(2, Number(e.target.value)) })}
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+            </label>
+            <label className="flex items-center gap-2 mt-4">
+              <input type="checkbox" checked={config.autoStart}
+                onChange={(e) => setConfig({ ...config, autoStart: e.target.checked })}
+                className="accent-primary" />
+              <span className="text-xs text-foreground">Auto-start next session</span>
+            </label>
+          </div>
+          <button onClick={() => { setConfig(DEFAULT_CONFIG); setCompletedSessions(0) }}
+            className="text-[10px] text-muted-foreground hover:text-foreground underline">
+            Reset to defaults
+          </button>
+        </div>
+      )}
 
       {/* Mode tabs */}
       <div className="flex gap-1 mb-6 rounded-lg bg-muted/50 p-1">
