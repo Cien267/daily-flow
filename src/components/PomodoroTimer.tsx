@@ -160,9 +160,9 @@ export default function PomodoroTimer() {
         </span>
         <div style="display:flex;gap:4px;margin-top:2px;">
           ${Array.from(
-            { length: DEFAULT_CONFIG.sessions_before_long },
+            { length: config.sessions_before_long },
             (_, i) =>
-              `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % DEFAULT_CONFIG.sessions_before_long || (completedSessions > 0 && completedSessions % DEFAULT_CONFIG.sessions_before_long === 0) ? color : "#27272a"};"></div>`,
+              `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % config.sessions_before_long || (completedSessions > 0 && completedSessions % config.sessions_before_long === 0) ? color : "#27272a"};"></div>`,
           ).join("")}
         </div>
         <span style="font-size:10px;color:#52525b;">${isRunning ? "Running" : "Paused"} · ${completedSessions} sessions</span>
@@ -371,16 +371,16 @@ export default function PomodoroTimer() {
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
             {Array.from(
-              { length: DEFAULT_CONFIG.sessions_before_long },
+              { length: config.sessions_before_long },
               (_, i) => (
                 <div
                   key={i}
                   className={`h-2 w-2 rounded-full transition-colors ${
                     i <
-                      completedSessions % DEFAULT_CONFIG.sessions_before_long ||
+                      completedSessions % config.sessions_before_long ||
                     (completedSessions > 0 &&
                       completedSessions %
-                        DEFAULT_CONFIG.sessions_before_long ===
+                        config.sessions_before_long ===
                         0)
                       ? styles.text.replace("text-", "bg-")
                       : "bg-muted/40"
