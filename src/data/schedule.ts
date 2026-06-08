@@ -13,7 +13,7 @@ export interface ScheduleBlock {
   task_style?: string;
 }
 
-export const schedule: ScheduleBlock[] = [
+export const defaultSchedule: ScheduleBlock[] = [
   { start: "07:00", end: "07:30", title: "Wake Start", category: "personal", description: "Morning routine, hygiene, coffee, light exposure", energy_level: "warm_up", focus_type: "none" },
   { start: "07:30", end: "09:00", title: "Deep Study", category: "growth", description: "Study technical skills, backend, system design, advanced programming concepts", energy_level: "peak", focus_type: "deep" },
   { start: "09:00", end: "11:30", title: "Remote Work Block", category: "work", description: "Primary remote job tasks, coding, collaboration, async communication", energy_level: "high", focus_type: "focused" },
@@ -28,6 +28,8 @@ export const schedule: ScheduleBlock[] = [
   { start: "22:45", end: "23:15", title: "Wind Down", category: "recovery", description: "Relax without screens, reading, stretching", energy_level: "sleep_prep", focus_type: "none" },
   { start: "23:30", end: null, title: "Sleep", category: "health", description: "Sleep and full recovery", energy_level: "restore", focus_type: "none" },
 ];
+
+export const schedule = defaultSchedule;
 
 export const categoryConfig: Record<Category, { label: string; icon: string; cssVar: string }> = {
   personal: { label: "Personal", icon: "Coffee", cssVar: "--cat-personal" },

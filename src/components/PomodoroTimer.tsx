@@ -7,7 +7,9 @@ import {
   MonitorPlay,
   X,
   Timer,
+  Settings,
 } from "lucide-react"
+import { useLocalStorage } from "@/lib/useLocalStorage"
 
 type PomodoroMode = "work" | "short_break" | "long_break"
 
@@ -16,6 +18,7 @@ interface PomodoroConfig {
   short_break: number
   long_break: number
   sessions_before_long: number
+  autoStart: boolean
 }
 
 const DEFAULT_CONFIG: PomodoroConfig = {
@@ -23,6 +26,7 @@ const DEFAULT_CONFIG: PomodoroConfig = {
   short_break: 5 * 60,
   long_break: 15 * 60,
   sessions_before_long: 4,
+  autoStart: false,
 }
 
 const MODE_LABELS: Record<PomodoroMode, string> = {
@@ -38,15 +42,17 @@ const MODE_COLORS: Record<PomodoroMode, string> = {
 }
 
 export default function PomodoroTimer() {
+  const [config, setConfig] = useLocalStorage<PomodoroConfig>("pomodoro.config.v1", DEFAULT_CONFIG)
   const [mode, setMode] = useState<PomodoroMode>("work")
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_CONFIG.work)
+  const [timeLeft, setTimeLeft] = useState(config.work)
   const [isRunning, setIsRunning] = useState(false)
-  const [completedSessions, setCompletedSessions] = useState(0)
+  const [completedSessions, setCompletedSessions] = useLocalStorage("pomodoro.sessions", 0)
+  const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
   const pipIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const totalTime = DEFAULT_CONFIG[mode]
+  const totalTime = config[mode]
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
   // Timer tick
@@ -65,41 +71,35 @@ export default function PomodoroTimer() {
     return () => clearInterval(iv)
   }, [isRunning])
 
+  const switchMode = useCallback((newMode: PomodoroMode, autoRun = false) => {
+    setMode(newMode)
+    setTimeLeft(config[newMode])
+    setIsRunning(autoRun)
+  }, [config])
+
   const handleComplete = useCallback(() => {
-    // Play a subtle notification sound
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
+      osc.connect(gain); gain.connect(ctx.destination)
       osc.frequency.value = 800
       gain.gain.value = 0.1
-      osc.start()
-      osc.stop(ctx.currentTime + 0.3)
+      osc.start(); osc.stop(ctx.currentTime + 0.3)
     } catch {}
 
+    const auto = config.autoStart
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      if (newSessions % DEFAULT_CONFIG.sessions_before_long === 0) {
-        switchMode("long_break")
-      } else {
-        switchMode("short_break")
-      }
+      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break", auto)
     } else {
-      switchMode("work")
+      switchMode("work", auto)
     }
-  }, [mode, completedSessions])
-
-  const switchMode = (newMode: PomodoroMode) => {
-    setMode(newMode)
-    setTimeLeft(DEFAULT_CONFIG[newMode])
-    setIsRunning(false)
-  }
+  }, [mode, completedSessions, config, switchMode, setCompletedSessions])
 
   const reset = () => {
-    setTimeLeft(DEFAULT_CONFIG[mode])
+    setTimeLeft(config[mode])
     setIsRunning(false)
   }
 
@@ -107,15 +107,14 @@ export default function PomodoroTimer() {
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      if (newSessions % DEFAULT_CONFIG.sessions_before_long === 0) {
-        switchMode("long_break")
-      } else {
-        switchMode("short_break")
-      }
+      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break")
     } else {
       switchMode("work")
     }
   }
+
+  // Sync timeLeft when config changes for the current mode (if not running)
+  useEffect(() => { if (!isRunning) setTimeLeft(config[mode]) }, [config, mode]) // eslint-disable-line
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
@@ -161,9 +160,9 @@ export default function PomodoroTimer() {
         </span>
         <div style="display:flex;gap:4px;margin-top:2px;">
           ${Array.from(
-            { length: DEFAULT_CONFIG.sessions_before_long },
+            { length: config.sessions_before_long },
             (_, i) =>
-              `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % DEFAULT_CONFIG.sessions_before_long || (completedSessions > 0 && completedSessions % DEFAULT_CONFIG.sessions_before_long === 0) ? color : "#27272a"};"></div>`,
+              `<div style="width:8px;height:8px;border-radius:50%;background:${i < completedSessions % config.sessions_before_long || (completedSessions > 0 && completedSessions % config.sessions_before_long === 0) ? color : "#27272a"};"></div>`,
           ).join("")}
         </div>
         <span style="font-size:10px;color:#52525b;">${isRunning ? "Running" : "Paused"} · ${completedSessions} sessions</span>
@@ -253,7 +252,7 @@ export default function PomodoroTimer() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 mt-10">
+    <div className="rounded-xl border border-border bg-card p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -264,6 +263,17 @@ export default function PomodoroTimer() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowSettings((s) => !s)}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
+              showSettings
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}
+            title="Settings"
+          >
+            <Settings className="h-3 w-3" />
+          </button>
+          <button
             onClick={pipOpen ? closePip : openPip}
             className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
               pipOpen
@@ -272,15 +282,49 @@ export default function PomodoroTimer() {
             }`}
             title={pipOpen ? "Close PiP" : "Open PiP"}
           >
-            {pipOpen ? (
-              <X className="h-3 w-3" />
-            ) : (
-              <MonitorPlay className="h-3 w-3" />
-            )}
+            {pipOpen ? <X className="h-3 w-3" /> : <MonitorPlay className="h-3 w-3" />}
             {pipOpen ? "Close" : "PiP"}
           </button>
         </div>
       </div>
+
+      {showSettings && (
+        <div className="mb-6 rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              ["work", "Focus (min)"],
+              ["short_break", "Short (min)"],
+              ["long_break", "Long (min)"],
+            ] as const).map(([k, label]) => (
+              <label key={k} className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+                <input type="number" min={1} max={120}
+                  value={Math.round(config[k] / 60)}
+                  onChange={(e) => setConfig({ ...config, [k]: Math.max(1, Number(e.target.value)) * 60 })}
+                  className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+              </label>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3 items-center">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions/long break</span>
+              <input type="number" min={2} max={10} value={config.sessions_before_long}
+                onChange={(e) => setConfig({ ...config, sessions_before_long: Math.max(2, Number(e.target.value)) })}
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+            </label>
+            <label className="flex items-center gap-2 mt-4">
+              <input type="checkbox" checked={config.autoStart}
+                onChange={(e) => setConfig({ ...config, autoStart: e.target.checked })}
+                className="accent-primary" />
+              <span className="text-xs text-foreground">Auto-start next session</span>
+            </label>
+          </div>
+          <button onClick={() => { setConfig(DEFAULT_CONFIG); setCompletedSessions(0) }}
+            className="text-[10px] text-muted-foreground hover:text-foreground underline">
+            Reset to defaults
+          </button>
+        </div>
+      )}
 
       {/* Mode tabs */}
       <div className="flex gap-1 mb-6 rounded-lg bg-muted/50 p-1">
@@ -372,16 +416,16 @@ export default function PomodoroTimer() {
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
             {Array.from(
-              { length: DEFAULT_CONFIG.sessions_before_long },
+              { length: config.sessions_before_long },
               (_, i) => (
                 <div
                   key={i}
                   className={`h-2 w-2 rounded-full transition-colors ${
                     i <
-                      completedSessions % DEFAULT_CONFIG.sessions_before_long ||
+                      completedSessions % config.sessions_before_long ||
                     (completedSessions > 0 &&
                       completedSessions %
-                        DEFAULT_CONFIG.sessions_before_long ===
+                        config.sessions_before_long ===
                         0)
                       ? styles.text.replace("text-", "bg-")
                       : "bg-muted/40"
