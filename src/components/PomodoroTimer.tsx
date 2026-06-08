@@ -252,7 +252,7 @@ export default function PomodoroTimer() {
   const dashOffset = circumference * (1 - progress / 100)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 mt-10">
+    <div className="rounded-xl border border-border bg-card p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
