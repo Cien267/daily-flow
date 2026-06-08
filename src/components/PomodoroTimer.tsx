@@ -71,41 +71,35 @@ export default function PomodoroTimer() {
     return () => clearInterval(iv)
   }, [isRunning])
 
+  const switchMode = useCallback((newMode: PomodoroMode, autoRun = false) => {
+    setMode(newMode)
+    setTimeLeft(config[newMode])
+    setIsRunning(autoRun)
+  }, [config])
+
   const handleComplete = useCallback(() => {
-    // Play a subtle notification sound
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
+      osc.connect(gain); gain.connect(ctx.destination)
       osc.frequency.value = 800
       gain.gain.value = 0.1
-      osc.start()
-      osc.stop(ctx.currentTime + 0.3)
+      osc.start(); osc.stop(ctx.currentTime + 0.3)
     } catch {}
 
+    const auto = config.autoStart
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      if (newSessions % DEFAULT_CONFIG.sessions_before_long === 0) {
-        switchMode("long_break")
-      } else {
-        switchMode("short_break")
-      }
+      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break", auto)
     } else {
-      switchMode("work")
+      switchMode("work", auto)
     }
-  }, [mode, completedSessions])
-
-  const switchMode = (newMode: PomodoroMode) => {
-    setMode(newMode)
-    setTimeLeft(DEFAULT_CONFIG[newMode])
-    setIsRunning(false)
-  }
+  }, [mode, completedSessions, config, switchMode, setCompletedSessions])
 
   const reset = () => {
-    setTimeLeft(DEFAULT_CONFIG[mode])
+    setTimeLeft(config[mode])
     setIsRunning(false)
   }
 
@@ -113,15 +107,14 @@ export default function PomodoroTimer() {
     if (mode === "work") {
       const newSessions = completedSessions + 1
       setCompletedSessions(newSessions)
-      if (newSessions % DEFAULT_CONFIG.sessions_before_long === 0) {
-        switchMode("long_break")
-      } else {
-        switchMode("short_break")
-      }
+      switchMode(newSessions % config.sessions_before_long === 0 ? "long_break" : "short_break")
     } else {
       switchMode("work")
     }
   }
+
+  // Sync timeLeft when config changes for the current mode (if not running)
+  useEffect(() => { if (!isRunning) setTimeLeft(config[mode]) }, [config, mode]) // eslint-disable-line
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60)
