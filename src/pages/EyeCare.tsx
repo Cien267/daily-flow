@@ -47,14 +47,27 @@ export default function EyeCare() {
   const beep = (freq: number) => {
     try {
       const ctx = new AudioContext()
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = freq
-      gain.gain.value = 0.15
-      osc.start()
-      osc.stop(ctx.currentTime + 1.5)
+      const now = ctx.currentTime
+
+      for (let i = 0; i < 5; i++) {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+
+        osc.type = "triangle"
+        osc.frequency.value = freq * (1 + i * 0.15)
+
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+
+        const start = now + i * 0.2
+
+        gain.gain.setValueAtTime(0, start)
+        gain.gain.linearRampToValueAtTime(0.15, start + 0.01)
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4)
+
+        osc.start(start)
+        osc.stop(start + 0.4)
+      }
     } catch (e) {
       console.error("Error occurred while playing sound:", e)
     }
