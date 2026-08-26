@@ -4,13 +4,59 @@ import { useLocalStorage } from "@/lib/useLocalStorage"
 
 type Phase = "focus" | "rest"
 
+interface EyeCareRuntime {
+  phase: Phase
+  timeLeft: number
+  isRunning: boolean
+  endAt: number | null
+  cycles: number
+}
+
+const readRuntime = (focusMin: number, restSec: number): EyeCareRuntime => {
+  const fallback: EyeCareRuntime = {
+    phase: "focus",
+    timeLeft: focusMin * 60,
+    isRunning: false,
+    endAt: null,
+    cycles: Number(localStorage.getItem("eye.cycles") ?? 0),
+  }
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem("eye.runtime.v1") ?? "null",
+    ) as EyeCareRuntime | null
+    if (!saved || !saved.phase) return fallback
+
+    let next = saved
+    const now = Date.now()
+    while (next.isRunning && next.endAt !== null && next.endAt <= now) {
+      const phase: Phase = next.phase === "focus" ? "rest" : "focus"
+      const duration = phase === "focus" ? focusMin * 60 : restSec
+      next = {
+        phase,
+        timeLeft: duration,
+        isRunning: true,
+        endAt: next.endAt + duration * 1000,
+        cycles: next.cycles + (phase === "focus" ? 1 : 0),
+      }
+    }
+    return next.isRunning && next.endAt !== null
+      ? {
+          ...next,
+          timeLeft: Math.max(0, Math.ceil((next.endAt - now) / 1000)),
+        }
+      : next
+  } catch {
+    return fallback
+  }
+}
+
 export default function EyeCare() {
   const [focusMin, setFocusMin] = useLocalStorage("eye.focusMin", 20)
   const [restSec, setRestSec] = useLocalStorage("eye.restSec", 20)
-  const [phase, setPhase] = useState<Phase>("focus")
-  const [timeLeft, setTimeLeft] = useState(focusMin * 60)
-  const [isRunning, setIsRunning] = useState(false)
-  const [cycles, setCycles] = useLocalStorage("eye.cycles", 0)
+  const [runtime, setRuntime] = useState<EyeCareRuntime>(() =>
+    readRuntime(focusMin, restSec),
+  )
+  const { phase, timeLeft, isRunning, cycles } = runtime
   const [pipOpen, setPipOpen] = useState(false)
   const pipRef = useRef<Window | null>(null)
   const pipIv = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -19,30 +65,56 @@ export default function EyeCare() {
   const progress = ((total - timeLeft) / total) * 100
 
   useEffect(() => {
-    if (!isRunning) setTimeLeft(phase === "focus" ? focusMin * 60 : restSec)
-  }, [focusMin, restSec, phase, isRunning])
+    localStorage.setItem("eye.runtime.v1", JSON.stringify(runtime))
+    localStorage.setItem("eye.cycles", String(cycles))
+  }, [runtime, cycles])
+
+  useEffect(() => {
+    if (!isRunning) {
+      setRuntime((current) => ({
+        ...current,
+        timeLeft: current.phase === "focus" ? focusMin * 60 : restSec,
+        endAt: null,
+      }))
+    }
+  }, [focusMin, restSec, isRunning])
 
   useEffect(() => {
     if (!isRunning) return
     const iv = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          if (phase === "focus") {
+      setRuntime((current) => {
+        if (!current.isRunning || current.endAt === null) return current
+        const remaining = Math.max(
+          0,
+          Math.ceil((current.endAt - Date.now()) / 1000),
+        )
+        if (remaining <= 0) {
+          if (current.phase === "focus") {
             beep(880)
-            setPhase("rest")
-            return restSec
+            return {
+              ...current,
+              phase: "rest",
+              timeLeft: restSec,
+              endAt: Date.now() + restSec * 1000,
+            }
           } else {
             beep(520)
-            setPhase("focus")
-            setCycles((c) => c + 1)
-            return focusMin * 60
+            return {
+              ...current,
+              phase: "focus",
+              timeLeft: focusMin * 60,
+              endAt: Date.now() + focusMin * 60 * 1000,
+              cycles: current.cycles + 1,
+            }
           }
         }
-        return t - 1
+        return remaining === current.timeLeft
+          ? current
+          : { ...current, timeLeft: remaining }
       })
-    }, 1000)
+    }, 250)
     return () => clearInterval(iv)
-  }, [isRunning, phase, focusMin, restSec, setCycles])
+  }, [isRunning, focusMin, restSec])
 
   const beep = (freq: number) => {
     try {
@@ -80,9 +152,13 @@ export default function EyeCare() {
   }
 
   const reset = () => {
-    setIsRunning(false)
-    setPhase("focus")
-    setTimeLeft(focusMin * 60)
+    setRuntime((current) => ({
+      ...current,
+      isRunning: false,
+      phase: "focus",
+      timeLeft: focusMin * 60,
+      endAt: null,
+    }))
   }
 
   const color = phase === "focus" ? "#3b82f6" : "#22c55e"
@@ -211,7 +287,15 @@ export default function EyeCare() {
               <RotateCcw className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setIsRunning(!isRunning)}
+              onClick={() =>
+                setRuntime((current) => ({
+                  ...current,
+                  isRunning: !current.isRunning,
+                  endAt: current.isRunning
+                    ? null
+                    : Date.now() + current.timeLeft * 1000,
+                }))
+              }
               className="rounded-full p-3 hover:opacity-80"
               style={{ background: `${color}22`, color }}
             >
