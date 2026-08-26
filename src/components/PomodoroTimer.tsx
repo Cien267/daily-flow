@@ -41,18 +41,74 @@ const MODE_COLORS: Record<PomodoroMode, string> = {
   long_break: "#3b82f6",
 }
 
+interface PomodoroRuntime {
+  mode: PomodoroMode
+  timeLeft: number
+  isRunning: boolean
+  endAt: number | null
+  completedSessions: number
+}
+
+const readPomodoroRuntime = (config: PomodoroConfig): PomodoroRuntime => {
+  const fallback: PomodoroRuntime = {
+    mode: "work",
+    timeLeft: config.work,
+    isRunning: false,
+    endAt: null,
+    completedSessions: Number(localStorage.getItem("pomodoro.sessions") ?? 0),
+  }
+
+  try {
+    const saved = JSON.parse(
+      localStorage.getItem("pomodoro.runtime.v1") ?? "null",
+    ) as PomodoroRuntime | null
+    if (!saved || !saved.mode) return fallback
+
+    let next = saved
+    const now = Date.now()
+    while (next.isRunning && next.endAt !== null && next.endAt <= now) {
+      const completedAt = next.endAt
+      const completedSessions =
+        next.mode === "work"
+          ? next.completedSessions + 1
+          : next.completedSessions
+      const mode: PomodoroMode =
+        next.mode === "work"
+          ? completedSessions % config.sessions_before_long === 0
+            ? "long_break"
+            : "short_break"
+          : "work"
+
+      next = {
+        mode,
+        completedSessions,
+        timeLeft: config[mode],
+        isRunning: config.autoStart,
+        endAt: config.autoStart ? completedAt + config[mode] * 1000 : null,
+      }
+    }
+
+    if (next.isRunning && next.endAt !== null) {
+      next = {
+        ...next,
+        timeLeft: Math.max(0, Math.ceil((next.endAt - now) / 1000)),
+      }
+    }
+    return next
+  } catch {
+    return fallback
+  }
+}
+
 export default function PomodoroTimer() {
   const [config, setConfig] = useLocalStorage<PomodoroConfig>(
     "pomodoro.config.v1",
     DEFAULT_CONFIG,
   )
-  const [mode, setMode] = useState<PomodoroMode>("work")
-  const [timeLeft, setTimeLeft] = useState(config.work)
-  const [isRunning, setIsRunning] = useState(false)
-  const [completedSessions, setCompletedSessions] = useLocalStorage(
-    "pomodoro.sessions",
-    0,
+  const [runtime, setRuntime] = useState<PomodoroRuntime>(() =>
+    readPomodoroRuntime(config),
   )
+  const { mode, timeLeft, isRunning, completedSessions } = runtime
   const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
@@ -61,27 +117,63 @@ export default function PomodoroTimer() {
   const totalTime = config[mode]
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
-  // Timer tick
+  useEffect(() => {
+    localStorage.setItem("pomodoro.runtime.v1", JSON.stringify(runtime))
+    localStorage.setItem("pomodoro.sessions", String(completedSessions))
+  }, [runtime, completedSessions])
+
+  const advance = useCallback(
+    (current: PomodoroRuntime, autoRun = config.autoStart) => {
+      const completed =
+        current.mode === "work"
+          ? current.completedSessions + 1
+          : current.completedSessions
+      const nextMode: PomodoroMode =
+        current.mode === "work"
+          ? completed % config.sessions_before_long === 0
+            ? "long_break"
+            : "short_break"
+          : "work"
+      return {
+        mode: nextMode,
+        timeLeft: config[nextMode],
+        isRunning: autoRun,
+        endAt: autoRun ? Date.now() + config[nextMode] * 1000 : null,
+        completedSessions: completed,
+      }
+    },
+    [config],
+  )
+
+  // Derive remaining time from an absolute deadline so background tabs,
+  // route changes and reloads cannot pause the timer.
   useEffect(() => {
     if (!isRunning) return
     const iv = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          setIsRunning(false)
-          handleComplete()
-          return 0
-        }
-        return t - 1
+      setRuntime((current) => {
+        if (!current.isRunning || current.endAt === null) return current
+        const remaining = Math.max(
+          0,
+          Math.ceil((current.endAt - Date.now()) / 1000),
+        )
+        if (remaining <= 0) return advance(current)
+        return remaining === current.timeLeft
+          ? current
+          : { ...current, timeLeft: remaining }
       })
-    }, 1000)
+    }, 250)
     return () => clearInterval(iv)
-  }, [isRunning])
+  }, [isRunning, advance])
 
   const switchMode = useCallback(
     (newMode: PomodoroMode, autoRun = false) => {
-      setMode(newMode)
-      setTimeLeft(config[newMode])
-      setIsRunning(autoRun)
+      setRuntime((current) => ({
+        ...current,
+        mode: newMode,
+        timeLeft: config[newMode],
+        isRunning: autoRun,
+        endAt: autoRun ? Date.now() + config[newMode] * 1000 : null,
+      }))
     },
     [config],
   )
@@ -101,43 +193,31 @@ export default function PomodoroTimer() {
       console.error("Error occurred while playing sound:", e)
     }
 
-    const auto = config.autoStart
-    if (mode === "work") {
-      const newSessions = completedSessions + 1
-      setCompletedSessions(newSessions)
-      switchMode(
-        newSessions % config.sessions_before_long === 0
-          ? "long_break"
-          : "short_break",
-        auto,
-      )
-    } else {
-      switchMode("work", auto)
-    }
-  }, [mode, completedSessions, config, switchMode, setCompletedSessions])
+    setRuntime((current) => advance(current))
+  }, [advance])
 
   const reset = () => {
-    setTimeLeft(config[mode])
-    setIsRunning(false)
+    setRuntime((current) => ({
+      ...current,
+      timeLeft: config[current.mode],
+      isRunning: false,
+      endAt: null,
+    }))
   }
 
   const skip = () => {
-    if (mode === "work") {
-      const newSessions = completedSessions + 1
-      setCompletedSessions(newSessions)
-      switchMode(
-        newSessions % config.sessions_before_long === 0
-          ? "long_break"
-          : "short_break",
-      )
-    } else {
-      switchMode("work")
-    }
+    setRuntime((current) => advance(current, false))
   }
 
   // Sync timeLeft when config changes for the current mode (if not running)
   useEffect(() => {
-    if (!isRunning) setTimeLeft(config[mode])
+    if (!isRunning) {
+      setRuntime((current) => ({
+        ...current,
+        timeLeft: config[current.mode],
+        endAt: null,
+      }))
+    }
   }, [config, mode]) // eslint-disable-line
 
   const formatTime = (s: number) => {
@@ -382,7 +462,13 @@ export default function PomodoroTimer() {
           <button
             onClick={() => {
               setConfig(DEFAULT_CONFIG)
-              setCompletedSessions(0)
+              setRuntime({
+                mode: "work",
+                timeLeft: DEFAULT_CONFIG.work,
+                isRunning: false,
+                endAt: null,
+                completedSessions: 0,
+              })
             }}
             className="text-[10px] text-muted-foreground hover:text-foreground underline"
           >
@@ -458,7 +544,15 @@ export default function PomodoroTimer() {
             <RotateCcw className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setIsRunning(!isRunning)}
+            onClick={() =>
+              setRuntime((current) => ({
+                ...current,
+                isRunning: !current.isRunning,
+                endAt: current.isRunning
+                  ? null
+                  : Date.now() + current.timeLeft * 1000,
+              }))
+            }
             className={`rounded-full p-3 transition-colors ${styles.bg} ${styles.text} hover:opacity-80`}
             title={isRunning ? "Pause" : "Start"}
           >
