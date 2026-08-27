@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, CopyPlus, ListPlus, Eraser, Flag } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, CopyPlus, Copy, ListPlus, Eraser, Flag } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
