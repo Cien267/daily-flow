@@ -138,6 +138,9 @@ export default function Tasks() {
         <Button variant="outline" size="sm" onClick={doCarry}>
           <CopyPlus className="h-3.5 w-3.5" /> Carry over from {formatDayLabel(shiftDate(date, -1))}
         </Button>
+        <Button variant="outline" size="sm" onClick={doCloneYesterday}>
+          <Copy className="h-3.5 w-3.5" /> Clone from {formatDayLabel(shiftDate(date, -1))}
+        </Button>
         <Button variant="outline" size="sm" onClick={() => setBulkOpen((v) => !v)}>
           <ListPlus className="h-3.5 w-3.5" /> Bulk add
         </Button>
