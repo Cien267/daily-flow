@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, CopyPlus, ListPlus, Eraser, Flag } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, CopyPlus, Copy, ListPlus, Eraser, Flag } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
@@ -53,6 +53,14 @@ export default function Tasks() {
     const n = t.carryOver(from, date)
     toast[n ? "success" : "info"](
       n ? `Carried over ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to carry over",
+    )
+  }
+
+  const doCloneYesterday = () => {
+    const from = shiftDate(date, -1)
+    const n = t.cloneFromDate(from, date)
+    toast[n ? "success" : "info"](
+      n ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to clone",
     )
   }
 
@@ -129,6 +137,9 @@ export default function Tasks() {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" onClick={doCarry}>
           <CopyPlus className="h-3.5 w-3.5" /> Carry over from {formatDayLabel(shiftDate(date, -1))}
+        </Button>
+        <Button variant="outline" size="sm" onClick={doCloneYesterday}>
+          <Copy className="h-3.5 w-3.5" /> Clone from {formatDayLabel(shiftDate(date, -1))}
         </Button>
         <Button variant="outline" size="sm" onClick={() => setBulkOpen((v) => !v)}>
           <ListPlus className="h-3.5 w-3.5" /> Bulk add

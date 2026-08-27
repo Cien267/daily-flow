@@ -241,6 +241,27 @@ export function useTasks() {
     return clones.length
   }
 
+  /** Clone every task from a source day into target day, preserving completion/priority/notes. */
+  const cloneFromDate = (from: string, to: string) => {
+    const source = byDate.get(from) ?? []
+    if (!source.length) return 0
+    const existing = new Set((byDate.get(to) ?? []).map((t) => t.title.toLowerCase()))
+    const picked = source.filter((t) => !existing.has(t.title.toLowerCase()))
+    if (!picked.length) return 0
+    let base = nextOrder(to)
+    const clones: Task[] = picked.map((t) => ({
+      ...t,
+      id: uid(),
+      date: to,
+      completedAt: t.done ? t.completedAt : undefined,
+      notes: t.notes.map((n) => ({ ...n, id: uid() })),
+      order: base++,
+      createdAt: Date.now(),
+    }))
+    setTasks((prev) => [...prev, ...clones])
+    return clones.length
+  }
+
   const clearCompleted = (date: string) => setTasks((prev) => prev.filter((t) => !(t.date === date && t.done)))
 
   const activeDates = useMemo(
@@ -264,6 +285,7 @@ export function useTasks() {
     updateNote,
     removeNote,
     carryOver,
+    cloneFromDate,
     clearCompleted,
   }
 }
