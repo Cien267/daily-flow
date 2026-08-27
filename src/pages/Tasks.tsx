@@ -56,6 +56,14 @@ export default function Tasks() {
     )
   }
 
+  const doCloneYesterday = () => {
+    const from = shiftDate(date, -1)
+    const n = t.cloneFromDate(from, date)
+    toast[n ? "success" : "info"](
+      n ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to clone",
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
       {/* Day header */}
