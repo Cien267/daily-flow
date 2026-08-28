@@ -241,7 +241,7 @@ export function useTasks() {
     return clones.length
   }
 
-  /** Clone every task from a source day into target day, preserving completion/priority/notes. */
+  /** Clone every task from a source day into target day, resetting all tasks to active. */
   const cloneFromDate = (from: string, to: string) => {
     const source = byDate.get(from) ?? []
     if (!source.length) return 0
@@ -253,7 +253,8 @@ export function useTasks() {
       ...t,
       id: uid(),
       date: to,
-      completedAt: t.done ? t.completedAt : undefined,
+      done: false,
+      completedAt: undefined,
       notes: t.notes.map((n) => ({ ...n, id: uid() })),
       order: base++,
       createdAt: Date.now(),
