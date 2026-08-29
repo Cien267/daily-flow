@@ -24,6 +24,7 @@ export default function Tasks() {
   const [bulk, setBulk] = useState("")
   const [filter, setFilter] = useState<"all" | "active" | "done">("all")
 
+  const isPastDay = date < todayKey()
   const dayTasks = t.forDate(date)
   const visible = dayTasks.filter((x) => (filter === "all" ? true : filter === "active" ? !x.done : x.done))
   const doneCount = dayTasks.filter((x) => x.done).length
