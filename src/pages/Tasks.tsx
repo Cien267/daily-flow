@@ -24,6 +24,7 @@ export default function Tasks() {
   const [bulk, setBulk] = useState("")
   const [filter, setFilter] = useState<"all" | "active" | "done">("all")
 
+  const isPastDay = date < todayKey()
   const dayTasks = t.forDate(date)
   const visible = dayTasks.filter((x) => (filter === "all" ? true : filter === "active" ? !x.done : x.done))
   const doneCount = dayTasks.filter((x) => x.done).length
@@ -108,7 +109,8 @@ export default function Tasks() {
       {/* Quick add */}
       <div className="flex gap-2">
         <Input
-          placeholder="Add a task for this day…"
+          disabled={isPastDay}
+          placeholder={isPastDay ? "Không thể thêm task cho ngày đã qua" : "Add a task for this day…"}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submitAdd()}
@@ -122,26 +124,27 @@ export default function Tasks() {
           }}
         />
         <button
+          disabled={isPastDay}
           onClick={() => setPriority(priority === "low" ? "med" : priority === "med" ? "high" : "low")}
-          className={`rounded-md border border-border px-3 ${pColor[priority]}`}
+          className={`rounded-md border border-border px-3 ${pColor[priority]} disabled:opacity-40`}
           title={`Priority: ${priority}`}
         >
           <Flag className="h-4 w-4" />
         </button>
-        <Button onClick={submitAdd}>
+        <Button onClick={submitAdd} disabled={isPastDay}>
           <Plus className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Actions */}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={doCarry}>
+        <Button variant="outline" size="sm" onClick={doCarry} disabled={isPastDay}>
           <CopyPlus className="h-3.5 w-3.5" /> Carry over from {formatDayLabel(shiftDate(date, -1))}
         </Button>
-        <Button variant="outline" size="sm" onClick={doCloneYesterday}>
+        <Button variant="outline" size="sm" onClick={doCloneYesterday} disabled={isPastDay}>
           <Copy className="h-3.5 w-3.5" /> Clone from {formatDayLabel(shiftDate(date, -1))}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setBulkOpen((v) => !v)}>
+        <Button variant="outline" size="sm" onClick={() => setBulkOpen((v) => !v)} disabled={isPastDay}>
           <ListPlus className="h-3.5 w-3.5" /> Bulk add
         </Button>
         {doneCount > 0 && (
