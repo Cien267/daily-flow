@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react"
 import { Plus, Trash2, Search } from "lucide-react"
-import { useLocalStorage } from "@/lib/useLocalStorage"
+import { useNotes, Note } from "@/hooks/useNotes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-interface Note { id: string; title: string; body: string; updatedAt: number }
-
 export default function Notes() {
-  const [notes, setNotes] = useLocalStorage<Note[]>("notes.v1", [])
+  const { notes, create: createNote, update, remove: removeNote } = useNotes()
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null)
   const [query, setQuery] = useState("")
 
@@ -16,17 +14,17 @@ export default function Notes() {
   const active = notes.find((n) => n.id === activeId) ?? null
 
   const create = () => {
-    const n: Note = { id: crypto.randomUUID(), title: "Untitled", body: "", updatedAt: Date.now() }
-    setNotes([n, ...notes]); setActiveId(n.id)
+    const n = createNote()
+    setActiveId(n.id)
   }
   const remove = (id: string) => {
     const next = notes.filter((n) => n.id !== id)
-    setNotes(next)
+    removeNote(id)
     if (activeId === id) setActiveId(next[0]?.id ?? null)
   }
   const updateActive = (patch: Partial<Note>) => {
     if (!active) return
-    setNotes(notes.map((n) => n.id === active.id ? { ...n, ...patch, updatedAt: Date.now() } : n))
+    update(active.id, patch)
   }
 
   const filtered = notes.filter((n) =>
