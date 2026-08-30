@@ -3,6 +3,7 @@ export type EnergyLevel = "warm_up" | "peak" | "high" | "medium_high" | "medium"
 export type FocusType = "none" | "deep" | "focused" | "creative" | "body" | "learning" | "reactive" | "light";
 
 export interface ScheduleBlock {
+  id?: string;
   start: string;
   end: string | null;
   title: string;
