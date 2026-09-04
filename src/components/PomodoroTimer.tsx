@@ -9,7 +9,13 @@ import {
   Timer,
   Settings,
 } from "lucide-react"
-import { useLocalStorage } from "@/lib/useLocalStorage"
+import { API_ENABLED } from "@/lib/api"
+import {
+  loadState,
+  readLocal,
+  saveState,
+  usePersistedState,
+} from "@/lib/persistence"
 
 type PomodoroMode = "work" | "short_break" | "long_break"
 
@@ -49,19 +55,21 @@ interface PomodoroRuntime {
   completedSessions: number
 }
 
-const readPomodoroRuntime = (config: PomodoroConfig): PomodoroRuntime => {
+const RUNTIME_KEY = "pomodoro.runtime.v1"
+
+const resolveRuntime = (
+  config: PomodoroConfig,
+  saved: PomodoroRuntime | null,
+): PomodoroRuntime => {
   const fallback: PomodoroRuntime = {
     mode: "work",
     timeLeft: config.work,
     isRunning: false,
     endAt: null,
-    completedSessions: Number(localStorage.getItem("pomodoro.sessions") ?? 0),
+    completedSessions: 0,
   }
 
   try {
-    const saved = JSON.parse(
-      localStorage.getItem("pomodoro.runtime.v1") ?? "null",
-    ) as PomodoroRuntime | null
     if (!saved || !saved.mode) return fallback
 
     let next = saved
@@ -101,13 +109,17 @@ const readPomodoroRuntime = (config: PomodoroConfig): PomodoroRuntime => {
 }
 
 export default function PomodoroTimer() {
-  const [config, setConfig] = useLocalStorage<PomodoroConfig>(
+  const [config, setConfig] = usePersistedState<PomodoroConfig>(
     "pomodoro.config.v1",
     DEFAULT_CONFIG,
   )
   const [runtime, setRuntime] = useState<PomodoroRuntime>(() =>
-    readPomodoroRuntime(config),
+    resolveRuntime(
+      config,
+      API_ENABLED ? null : readLocal<PomodoroRuntime | null>(RUNTIME_KEY, null),
+    ),
   )
+  const runtimeHydrated = useRef(!API_ENABLED)
   const { mode, timeLeft, isRunning, completedSessions } = runtime
   const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
@@ -118,9 +130,23 @@ export default function PomodoroTimer() {
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
   useEffect(() => {
-    localStorage.setItem("pomodoro.runtime.v1", JSON.stringify(runtime))
-    localStorage.setItem("pomodoro.sessions", String(completedSessions))
-  }, [runtime, completedSessions])
+    if (!API_ENABLED) return
+    let alive = true
+    loadState<PomodoroRuntime | null>(RUNTIME_KEY, null).then((saved) => {
+      if (!alive) return
+      runtimeHydrated.current = true
+      setRuntime(resolveRuntime(config, saved))
+    })
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!runtimeHydrated.current) return
+    saveState(RUNTIME_KEY, runtime)
+  }, [runtime])
 
   const advance = useCallback(
     (current: PomodoroRuntime, autoRun = config.autoStart) => {
