@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { Eye, Play, Pause, RotateCcw, MonitorPlay, X } from "lucide-react"
-import { useLocalStorage } from "@/lib/useLocalStorage"
+import { API_ENABLED } from "@/lib/api"
+import {
+  loadState,
+  readLocal,
+  saveState,
+  usePersistedState,
+} from "@/lib/persistence"
 
 type Phase = "focus" | "rest"
 
@@ -12,18 +18,21 @@ interface EyeCareRuntime {
   cycles: number
 }
 
-const readRuntime = (focusMin: number, restSec: number): EyeCareRuntime => {
+const RUNTIME_KEY = "eye.runtime.v1"
+
+const resolveRuntime = (
+  focusMin: number,
+  restSec: number,
+  saved: EyeCareRuntime | null,
+): EyeCareRuntime => {
   const fallback: EyeCareRuntime = {
     phase: "focus",
     timeLeft: focusMin * 60,
     isRunning: false,
     endAt: null,
-    cycles: Number(localStorage.getItem("eye.cycles") ?? 0),
+    cycles: 0,
   }
   try {
-    const saved = JSON.parse(
-      localStorage.getItem("eye.runtime.v1") ?? "null",
-    ) as EyeCareRuntime | null
     if (!saved || !saved.phase) return fallback
 
     let next = saved
@@ -51,11 +60,16 @@ const readRuntime = (focusMin: number, restSec: number): EyeCareRuntime => {
 }
 
 export default function EyeCare() {
-  const [focusMin, setFocusMin] = useLocalStorage("eye.focusMin", 20)
-  const [restSec, setRestSec] = useLocalStorage("eye.restSec", 20)
+  const [focusMin, setFocusMin] = usePersistedState("eye.focusMin", 20)
+  const [restSec, setRestSec] = usePersistedState("eye.restSec", 20)
   const [runtime, setRuntime] = useState<EyeCareRuntime>(() =>
-    readRuntime(focusMin, restSec),
+    resolveRuntime(
+      focusMin,
+      restSec,
+      API_ENABLED ? null : readLocal<EyeCareRuntime | null>(RUNTIME_KEY, null),
+    ),
   )
+  const runtimeHydrated = useRef(!API_ENABLED)
   const { phase, timeLeft, isRunning, cycles } = runtime
   const [pipOpen, setPipOpen] = useState(false)
   const pipRef = useRef<Window | null>(null)
@@ -65,9 +79,23 @@ export default function EyeCare() {
   const progress = ((total - timeLeft) / total) * 100
 
   useEffect(() => {
-    localStorage.setItem("eye.runtime.v1", JSON.stringify(runtime))
-    localStorage.setItem("eye.cycles", String(cycles))
-  }, [runtime, cycles])
+    if (!API_ENABLED) return
+    let alive = true
+    loadState<EyeCareRuntime | null>(RUNTIME_KEY, null).then((saved) => {
+      if (!alive) return
+      runtimeHydrated.current = true
+      setRuntime(resolveRuntime(focusMin, restSec, saved))
+    })
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!runtimeHydrated.current) return
+    saveState(RUNTIME_KEY, runtime)
+  }, [runtime])
 
   useEffect(() => {
     if (!isRunning) {
