@@ -87,9 +87,12 @@ export type Database = {
           description: string | null
           end_time: string
           energy: number | null
+          energy_level: string
+          focus_type: string
           id: string
           position: number
           start_time: string
+          task_style: string | null
           title: string
           user_id: string
         }
@@ -99,9 +102,12 @@ export type Database = {
           description?: string | null
           end_time: string
           energy?: number | null
+          energy_level?: string
+          focus_type?: string
           id?: string
           position?: number
           start_time: string
+          task_style?: string | null
           title: string
           user_id: string
         }
@@ -111,9 +117,12 @@ export type Database = {
           description?: string | null
           end_time?: string
           energy?: number | null
+          energy_level?: string
+          focus_type?: string
           id?: string
           position?: number
           start_time?: string
+          task_style?: string | null
           title?: string
           user_id?: string
         }
