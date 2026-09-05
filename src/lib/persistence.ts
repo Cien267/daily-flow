@@ -1,50 +1,70 @@
-import { useEffect, useRef, useState } from "react"
-import { API_ENABLED, api, silent } from "@/lib/api"
-
 /**
- * Generic key/value app state (settings + timer runtime).
- * Local mode  -> localStorage
- * API mode    -> GET/PUT  /api/state/:key
+ * Cloud-backed key/value persistence (per user) via the `app_state` table.
+ * Used for Pomodoro / Eye Care config and runtime state.
+ *
+ * Writes are debounced per key so high-frequency timer updates don't
+ * hammer the database.
  */
+import { useEffect, useRef, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
-export function readLocal<T>(key: string, fallback: T): T {
-  try {
-    const raw = window.localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-export function saveState<T>(key: string, value: T): void {
-  if (API_ENABLED) {
-    silent(api.put(`/api/state/${encodeURIComponent(key)}`, { value }))
-    return
-  }
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    /* ignore */
-  }
+async function getUserId(): Promise<string | null> {
+  const { data } = await supabase.auth.getUser()
+  return data.user?.id ?? null
 }
 
 export async function loadState<T>(key: string, fallback: T): Promise<T> {
-  if (!API_ENABLED) return readLocal(key, fallback)
   try {
-    const res = await api.get<{ value: T } | null>(`/api/state/${encodeURIComponent(key)}`)
-    return res && res.value !== undefined && res.value !== null ? res.value : fallback
-  } catch {
+    const { data, error } = await supabase
+      .from("app_state")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle()
+    if (error) throw error
+    return data && data.value !== null && data.value !== undefined
+      ? (data.value as T)
+      : fallback
+  } catch (e) {
+    console.warn("[state] load", key, e)
     return fallback
   }
 }
 
-/** Drop-in replacement for useLocalStorage that follows the API flag. */
+const pending = new Map<string, ReturnType<typeof setTimeout>>()
+
+export function saveState<T>(key: string, value: T): void {
+  const existing = pending.get(key)
+  if (existing) clearTimeout(existing)
+  pending.set(
+    key,
+    setTimeout(async () => {
+      pending.delete(key)
+      try {
+        const userId = await getUserId()
+        if (!userId) return
+        const { error } = await supabase.from("app_state").upsert(
+          {
+            user_id: userId,
+            key,
+            value: value as unknown as Record<string, unknown>,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,key" },
+        )
+        if (error) throw error
+      } catch (e) {
+        console.warn("[state] save", key, e)
+      }
+    }, 400),
+  )
+}
+
+/** useState persisted to the cloud `app_state` table. */
 export function usePersistedState<T>(key: string, initial: T) {
-  const [value, setValue] = useState<T>(() => (API_ENABLED ? initial : readLocal(key, initial)))
-  const hydrated = useRef(!API_ENABLED)
+  const [value, setValue] = useState<T>(initial)
+  const hydrated = useRef(false)
 
   useEffect(() => {
-    if (!API_ENABLED) return
     let alive = true
     loadState<T>(key, initial).then((v) => {
       if (!alive) return
