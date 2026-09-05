@@ -71,9 +71,14 @@ export function useNotes() {
     setNotes((prev) =>
       prev.map((n) => (n.id === id ? { ...n, ...patch, updatedAt } : n)),
     )
+    const row: { title?: string; body?: string; updated_at: number } = {
+      updated_at: updatedAt,
+    }
+    if (patch.title !== undefined) row.title = patch.title
+    if (patch.body !== undefined) row.body = patch.body
     supabase
       .from("notes")
-      .update({ ...patch, updated_at: updatedAt })
+      .update(row)
       .eq("id", id)
       .then(({ error }) => error && console.warn("[notes] update", error))
   }

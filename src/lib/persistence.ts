@@ -46,7 +46,7 @@ export function saveState<T>(key: string, value: T): void {
           {
             user_id: userId,
             key,
-            value: value as unknown as Record<string, unknown>,
+            value: JSON.parse(JSON.stringify(value ?? null)),
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,key" },
