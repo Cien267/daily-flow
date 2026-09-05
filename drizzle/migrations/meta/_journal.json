@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788577129285,
+      "tag": "0000_create_daily_flow_schema",
+      "breakpoints": true
+    }
+  ]
 }

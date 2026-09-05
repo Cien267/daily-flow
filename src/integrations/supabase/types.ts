@@ -14,7 +14,185 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_state: {
+        Row: {
+          key: string
+          updated_at: string
+          user_id: string
+          value: Json | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          user_id: string
+          value?: Json | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json | null
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: number
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: number
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      schedule_blocks: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          end_time: string
+          energy: number | null
+          id: string
+          position: number
+          start_time: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          end_time: string
+          energy?: number | null
+          id?: string
+          position?: number
+          start_time: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          energy?: number | null
+          id?: string
+          position?: number
+          start_time?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_notes: {
+        Row: {
+          done: boolean
+          id: string
+          position: number
+          task_id: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          done?: boolean
+          id?: string
+          position?: number
+          task_id: string
+          text?: string
+          user_id: string
+        }
+        Update: {
+          done?: boolean
+          id?: string
+          position?: number
+          task_id?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_notes_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          completed_at: number | null
+          created_at: number
+          date: string
+          done: boolean
+          id: string
+          order_index: number
+          pinned: boolean
+          priority: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: number | null
+          created_at?: number
+          date: string
+          done?: boolean
+          id?: string
+          order_index?: number
+          pinned?: boolean
+          priority?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: number | null
+          created_at?: number
+          date?: string
+          done?: boolean
+          id?: string
+          order_index?: number
+          pinned?: boolean
+          priority?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
