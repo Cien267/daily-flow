@@ -182,7 +182,15 @@ export function useTasks() {
   }
 
   const patchTask = (id: string, patch: Partial<Task>) => {
-    const row: Record<string, unknown> = {}
+    const row: {
+      title?: string
+      done?: boolean
+      priority?: string
+      pinned?: boolean
+      date?: string
+      order_index?: number
+      completed_at?: number | null
+    } = {}
     if (patch.title !== undefined) row.title = patch.title
     if (patch.done !== undefined) row.done = patch.done
     if (patch.priority !== undefined) row.priority = patch.priority
