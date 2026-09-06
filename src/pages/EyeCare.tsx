@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { Eye, Play, Pause, RotateCcw, MonitorPlay, X } from "lucide-react"
-import { API_ENABLED } from "@/lib/api"
-import {
-  loadState,
-  readLocal,
-  saveState,
-  usePersistedState,
-} from "@/lib/persistence"
+import { loadState, saveState, usePersistedState } from "@/lib/persistence"
 
 type Phase = "focus" | "rest"
 
@@ -63,13 +57,9 @@ export default function EyeCare() {
   const [focusMin, setFocusMin] = usePersistedState("eye.focusMin", 20)
   const [restSec, setRestSec] = usePersistedState("eye.restSec", 20)
   const [runtime, setRuntime] = useState<EyeCareRuntime>(() =>
-    resolveRuntime(
-      focusMin,
-      restSec,
-      API_ENABLED ? null : readLocal<EyeCareRuntime | null>(RUNTIME_KEY, null),
-    ),
+    resolveRuntime(focusMin, restSec, null),
   )
-  const runtimeHydrated = useRef(!API_ENABLED)
+  const runtimeHydrated = useRef(false)
   const { phase, timeLeft, isRunning, cycles } = runtime
   const [pipOpen, setPipOpen] = useState(false)
   const pipRef = useRef<Window | null>(null)
@@ -79,7 +69,6 @@ export default function EyeCare() {
   const progress = ((total - timeLeft) / total) * 100
 
   useEffect(() => {
-    if (!API_ENABLED) return
     let alive = true
     loadState<EyeCareRuntime | null>(RUNTIME_KEY, null).then((saved) => {
       if (!alive) return
