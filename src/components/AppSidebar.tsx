@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Timer, Eye, CheckSquare, StickyNote } from "lucide-react";
+import { Calendar, Timer, Eye, CheckSquare, StickyNote, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -24,6 +26,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
+  const { user, signOut } = useAuth();
   const isActive = (path: string) => (path === "/" ? pathname === "/" : pathname.startsWith(path));
 
   return (
@@ -47,6 +50,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={signOut} tooltip="Sign out">
+              <LogOut className="h-4 w-4" />
+              {!collapsed && (
+                <span className="truncate">{user?.email ?? "Sign out"}</span>
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

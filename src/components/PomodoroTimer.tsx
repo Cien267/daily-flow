@@ -9,13 +9,7 @@ import {
   Timer,
   Settings,
 } from "lucide-react"
-import { API_ENABLED } from "@/lib/api"
-import {
-  loadState,
-  readLocal,
-  saveState,
-  usePersistedState,
-} from "@/lib/persistence"
+import { loadState, saveState, usePersistedState } from "@/lib/persistence"
 
 type PomodoroMode = "work" | "short_break" | "long_break"
 
@@ -114,12 +108,9 @@ export default function PomodoroTimer() {
     DEFAULT_CONFIG,
   )
   const [runtime, setRuntime] = useState<PomodoroRuntime>(() =>
-    resolveRuntime(
-      config,
-      API_ENABLED ? null : readLocal<PomodoroRuntime | null>(RUNTIME_KEY, null),
-    ),
+    resolveRuntime(config, null),
   )
-  const runtimeHydrated = useRef(!API_ENABLED)
+  const runtimeHydrated = useRef(false)
   const { mode, timeLeft, isRunning, completedSessions } = runtime
   const [showSettings, setShowSettings] = useState(false)
   const [pipOpen, setPipOpen] = useState(false)
@@ -130,7 +121,6 @@ export default function PomodoroTimer() {
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
   useEffect(() => {
-    if (!API_ENABLED) return
     let alive = true
     loadState<PomodoroRuntime | null>(RUNTIME_KEY, null).then((saved) => {
       if (!alive) return
