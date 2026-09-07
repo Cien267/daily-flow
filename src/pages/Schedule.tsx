@@ -19,7 +19,7 @@ const empty: ScheduleBlock = {
 }
 
 export default function Schedule() {
-  const { blocks, add, update, remove, move, reset } = useSchedule()
+  const { blocks, loading, add, update, remove, move, reset } = useSchedule()
   const [currentIdx, setCurrentIdx] = useState(getCurrentBlockIndex(blocks))
   const [editing, setEditing] = useState<{ index: number | null; block: ScheduleBlock } | null>(null)
 
