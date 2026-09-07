@@ -12,13 +12,16 @@ export interface Note {
 export function useNotes() {
   const { user } = useAuth()
   const [notes, setNotes] = useState<Note[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) {
       setNotes([])
+      setLoading(false)
       return
     }
     let alive = true
+    setLoading(true)
     supabase
       .from("notes")
       .select("*")
@@ -27,6 +30,7 @@ export function useNotes() {
         if (!alive) return
         if (error) {
           console.warn("[notes] load", error)
+          setLoading(false)
           return
         }
         setNotes(
@@ -37,6 +41,7 @@ export function useNotes() {
             updatedAt: Number(n.updated_at) || 0,
           })),
         )
+        setLoading(false)
       })
     return () => {
       alive = false
@@ -92,5 +97,5 @@ export function useNotes() {
       .then(({ error }) => error && console.warn("[notes] remove", error))
   }
 
-  return { notes, create, update, remove }
+  return { notes, loading, create, update, remove }
 }
