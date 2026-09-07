@@ -70,7 +70,14 @@ export default function Notes() {
       </aside>
 
       <section className="flex flex-col min-h-0">
-        {active ? (
+        {loading ? (
+          <div className="px-6 pt-6 space-y-3">
+            <div className="h-7 w-1/3 animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-5/6 animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+          </div>
+        ) : active ? (
           <>
             <input value={active.title} onChange={(e) => updateActive({ title: e.target.value })}
               placeholder="Title" className="px-6 pt-6 pb-3 bg-transparent text-2xl font-bold text-foreground outline-none" />
