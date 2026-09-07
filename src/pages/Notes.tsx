@@ -45,7 +45,14 @@ export default function Notes() {
           </div>
         </div>
         <ul className="flex-1 overflow-y-auto">
-          {filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <li key={i} className="px-3 py-2.5 border-b border-border space-y-2">
+                <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </li>
+            ))}
+          {!loading && filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
           {filtered.map((n) => (
             <li key={n.id}>
               <button onClick={() => setActiveId(n.id)}
