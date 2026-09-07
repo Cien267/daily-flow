@@ -194,7 +194,14 @@ export default function Tasks() {
 
       {/* List */}
       <ul className="space-y-1.5">
-        {visible.length === 0 && (
+        {t.loading &&
+          Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-3">
+              <div className="h-4 w-4 animate-pulse rounded bg-muted" />
+              <div className="h-3.5 flex-1 animate-pulse rounded bg-muted" />
+            </li>
+          ))}
+        {!t.loading && visible.length === 0 && (
           <li className="rounded-lg border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
             Nothing here yet — add a task or carry over from a previous day.
           </li>

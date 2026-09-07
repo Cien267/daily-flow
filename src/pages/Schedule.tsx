@@ -58,6 +58,27 @@ export default function Schedule() {
       </div>
 
       <div className="mt-6 space-y-1">
+        {loading &&
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex gap-4 md:gap-6">
+              <div className="w-16 md:w-20 shrink-0 pt-3 flex justify-end">
+                <div className="h-4 w-10 animate-pulse rounded bg-muted" />
+              </div>
+              <div className="relative flex flex-col items-center">
+                <div className="mt-3 h-3 w-3 rounded-full bg-muted" />
+                {i < 4 && <div className="w-px flex-1 bg-border" />}
+              </div>
+              <div className="mb-3 flex-1 rounded-lg border border-border bg-card p-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-1/4 animate-pulse rounded bg-muted" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         {blocks.map((block, i) => (
           <div key={`${block.start}-${i}`} className="group/row relative">
             <TimelineBlock block={block} index={i} isCurrent={i === currentIdx} total={blocks.length} />

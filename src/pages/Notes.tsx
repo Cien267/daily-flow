@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export default function Notes() {
-  const { notes, create: createNote, update, remove: removeNote } = useNotes()
+  const { notes, loading, create: createNote, update, remove: removeNote } = useNotes()
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null)
   const [query, setQuery] = useState("")
 
