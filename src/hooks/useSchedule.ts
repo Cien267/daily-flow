@@ -54,15 +54,18 @@ const sortBlocks = (list: ScheduleBlock[]) =>
 export function useSchedule() {
   const { user } = useAuth()
   const [blocks, setBlocksState] = useState<ScheduleBlock[]>([])
+  const [loading, setLoading] = useState(true)
   const seeded = useRef(false)
 
   useEffect(() => {
     if (!user) {
       setBlocksState([])
+      setLoading(false)
       seeded.current = false
       return
     }
     let alive = true
+    setLoading(true)
     ;(async () => {
       const { data, error } = await supabase
         .from("schedule_blocks")
@@ -71,6 +74,7 @@ export function useSchedule() {
       if (!alive) return
       if (error) {
         console.warn("[schedule] load", error)
+        setLoading(false)
         return
       }
       if (!data.length && !seeded.current) {
@@ -83,12 +87,15 @@ export function useSchedule() {
         if (!alive) return
         if (insErr) {
           console.warn("[schedule] seed", insErr)
+          setLoading(false)
           return
         }
         setBlocksState((inserted as BlockRow[]).map(rowToBlock))
+        setLoading(false)
         return
       }
       setBlocksState((data as BlockRow[]).map(rowToBlock))
+      setLoading(false)
     })()
     return () => {
       alive = false
@@ -190,5 +197,5 @@ export function useSchedule() {
     return next
   }
 
-  return { blocks, add, update, remove, move, reset, setBlocks }
+  return { blocks, loading, add, update, remove, move, reset, setBlocks }
 }

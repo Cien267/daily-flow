@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export default function Notes() {
-  const { notes, create: createNote, update, remove: removeNote } = useNotes()
+  const { notes, loading, create: createNote, update, remove: removeNote } = useNotes()
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null)
   const [query, setQuery] = useState("")
 
@@ -45,7 +45,14 @@ export default function Notes() {
           </div>
         </div>
         <ul className="flex-1 overflow-y-auto">
-          {filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <li key={i} className="px-3 py-2.5 border-b border-border space-y-2">
+                <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </li>
+            ))}
+          {!loading && filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
           {filtered.map((n) => (
             <li key={n.id}>
               <button onClick={() => setActiveId(n.id)}
@@ -63,7 +70,14 @@ export default function Notes() {
       </aside>
 
       <section className="flex flex-col min-h-0">
-        {active ? (
+        {loading ? (
+          <div className="px-6 pt-6 space-y-3">
+            <div className="h-7 w-1/3 animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-5/6 animate-pulse rounded bg-muted" />
+            <div className="h-3.5 w-2/3 animate-pulse rounded bg-muted" />
+          </div>
+        ) : active ? (
           <>
             <input value={active.title} onChange={(e) => updateActive({ title: e.target.value })}
               placeholder="Title" className="px-6 pt-6 pb-3 bg-transparent text-2xl font-bold text-foreground outline-none" />

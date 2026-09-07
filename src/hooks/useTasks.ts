@@ -107,13 +107,16 @@ const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number
 export function useTasks() {
   const { user } = useAuth()
   const [tasks, setTasksState] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) {
       setTasksState([])
+      setLoading(false)
       return
     }
     let alive = true
+    setLoading(true)
     ;(async () => {
       const [{ data: taskRows, error: tErr }, { data: noteRows, error: nErr }] =
         await Promise.all([
@@ -123,6 +126,7 @@ export function useTasks() {
       if (!alive) return
       if (tErr || nErr) {
         console.warn("[tasks] load", tErr ?? nErr)
+        setLoading(false)
         return
       }
       const notesByTask = new Map<string, TaskNote[]>()
@@ -145,6 +149,7 @@ export function useTasks() {
           completedAt: t.completed_at ?? undefined,
         })),
       )
+      setLoading(false)
     })()
     return () => {
       alive = false
@@ -475,6 +480,7 @@ export function useTasks() {
 
   return {
     tasks,
+    loading,
     forDate,
     byDate,
     activeDates,
