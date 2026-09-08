@@ -169,22 +169,24 @@ export function useTasks() {
     return next
   }
 
-  const insertTasks = (list: Task[]) => {
+  const insertTasks = async (list: Task[]) => {
     if (!user || !list.length) return
-    supabase
+    const { error } = await supabase
       .from("tasks")
       .insert(list.map((t) => taskToRow(t, user.id)))
-      .then(({ error }) => error && console.warn("[tasks] insert", error))
+    if (error) {
+      console.warn("[tasks] insert", error)
+      return
+    }
     const notes = list.flatMap((t) =>
       t.notes.map((n, i) => noteToRow(n, t.id, user.id, i)),
     )
     if (notes.length) {
-      supabase
-        .from("task_notes")
-        .insert(notes)
-        .then(({ error }) => error && console.warn("[tasks] insert notes", error))
+      const { error: nErr } = await supabase.from("task_notes").insert(notes)
+      if (nErr) console.warn("[tasks] insert notes", nErr)
     }
   }
+
 
   const patchTask = (id: string, patch: Partial<Task>) => {
     const row: {
