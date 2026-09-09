@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Plus, Trash2, Search } from "lucide-react"
 import { useNotes, Note } from "@/hooks/useNotes"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,28 @@ export default function Notes() {
 
   const active = notes.find((n) => n.id === activeId) ?? null
 
+  // Local draft so typing (including Vietnamese IME) is never interrupted by refetch/re-render
+  const [draft, setDraft] = useState<{ title: string; body: string }>({ title: "", body: "" })
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pending = useRef(false)
+
+  useEffect(() => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null }
+    pending.current = false
+    setDraft({ title: active?.title ?? "", body: active?.body ?? "" })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId])
+
+  useEffect(() => {
+    if (!active || pending.current) return
+    setDraft((d) =>
+      d.title === active.title && d.body === active.body ? d : { title: active.title, body: active.body },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.title, active?.body])
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+
   const create = () => {
     const n = createNote()
     setActiveId(n.id)
@@ -24,7 +46,16 @@ export default function Notes() {
   }
   const updateActive = (patch: Partial<Note>) => {
     if (!active) return
-    update(active.id, patch)
+    const id = active.id
+    const next = { ...draft, ...patch } as { title: string; body: string }
+    setDraft(next)
+    pending.current = true
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => {
+      pending.current = false
+      timer.current = null
+      update(id, next)
+    }, 600)
   }
 
   const filtered = notes.filter((n) =>
