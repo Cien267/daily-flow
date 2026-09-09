@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
+
 import {
   ScheduleBlock,
   defaultSchedule,
@@ -53,54 +55,50 @@ const sortBlocks = (list: ScheduleBlock[]) =>
 
 export function useSchedule() {
   const { user } = useAuth()
-  const [blocks, setBlocksState] = useState<ScheduleBlock[]>([])
-  const [loading, setLoading] = useState(true)
-  const seeded = useRef(false)
+  const queryClient = useQueryClient()
+  const queryKey = ["schedule", user?.id] as const
 
-  useEffect(() => {
-    if (!user) {
-      setBlocksState([])
-      setLoading(false)
-      seeded.current = false
-      return
-    }
-    let alive = true
-    setLoading(true)
-    ;(async () => {
-      const { data, error } = await supabase
+  const fetchBlocks = async (): Promise<ScheduleBlock[]> => {
+    const { data, error } = await supabase
+      .from("schedule_blocks")
+      .select("*")
+      .order("position", { ascending: true })
+    if (error) throw error
+    if (!data.length && user) {
+      const rows = defaultSchedule.map((b, i) => blockToRow(b, user.id, i))
+      const { data: inserted, error: insErr } = await supabase
         .from("schedule_blocks")
+        .insert(rows)
         .select("*")
-        .order("position", { ascending: true })
-      if (!alive) return
-      if (error) {
-        console.warn("[schedule] load", error)
-        setLoading(false)
-        return
-      }
-      if (!data.length && !seeded.current) {
-        seeded.current = true
-        const rows = defaultSchedule.map((b, i) => blockToRow(b, user.id, i))
-        const { data: inserted, error: insErr } = await supabase
-          .from("schedule_blocks")
-          .insert(rows)
-          .select("*")
-        if (!alive) return
-        if (insErr) {
-          console.warn("[schedule] seed", insErr)
-          setLoading(false)
-          return
-        }
-        setBlocksState((inserted as BlockRow[]).map(rowToBlock))
-        setLoading(false)
-        return
-      }
-      setBlocksState((data as BlockRow[]).map(rowToBlock))
-      setLoading(false)
-    })()
-    return () => {
-      alive = false
+      if (insErr) throw insErr
+      return (inserted as unknown as BlockRow[]).map(rowToBlock)
     }
-  }, [user])
+    return (data as unknown as BlockRow[]).map(rowToBlock)
+  }
+
+  const { data, isPending } = useQuery({
+    queryKey,
+    queryFn: fetchBlocks,
+    enabled: !!user,
+  })
+
+  const blocks = data ?? []
+  const loading = !!user && isPending
+
+  const blocksRef = useRef(blocks)
+  blocksRef.current = blocks
+
+  const setBlocksState = (
+    updater: ScheduleBlock[] | ((prev: ScheduleBlock[]) => ScheduleBlock[]),
+  ) => {
+    const next =
+      typeof updater === "function"
+        ? (updater as (p: ScheduleBlock[]) => ScheduleBlock[])(blocksRef.current)
+        : updater
+    blocksRef.current = next
+    queryClient.setQueryData(queryKey, next)
+  }
+
 
   const add = (block: ScheduleBlock) => {
     if (!user) return

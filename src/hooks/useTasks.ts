@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
+
 
 export type Priority = "low" | "med" | "high"
 
@@ -104,57 +106,46 @@ const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number
   position,
 })
 
+async function fetchTasks(): Promise<Task[]> {
+  const [{ data: taskRows, error: tErr }, { data: noteRows, error: nErr }] =
+    await Promise.all([
+      supabase.from("tasks").select("*"),
+      supabase.from("task_notes").select("*").order("position", { ascending: true }),
+    ])
+  if (tErr || nErr) throw tErr ?? nErr
+  const notesByTask = new Map<string, TaskNote[]>()
+  for (const n of (noteRows ?? []) as unknown as NoteRow[]) {
+    const arr = notesByTask.get(n.task_id) ?? []
+    arr.push({ id: n.id, text: n.text, done: n.done })
+    notesByTask.set(n.task_id, arr)
+  }
+  return ((taskRows ?? []) as unknown as TaskRow[]).map((t) => ({
+    id: t.id,
+    date: t.date,
+    title: t.title,
+    done: t.done,
+    priority: t.priority as Priority,
+    pinned: t.pinned,
+    notes: notesByTask.get(t.id) ?? [],
+    order: t.order_index,
+    createdAt: Number(t.created_at) || 0,
+    completedAt: t.completed_at ?? undefined,
+  }))
+}
+
 export function useTasks() {
   const { user } = useAuth()
-  const [tasks, setTasksState] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const queryKey = ["tasks", user?.id] as const
 
-  useEffect(() => {
-    if (!user) {
-      setTasksState([])
-      setLoading(false)
-      return
-    }
-    let alive = true
-    setLoading(true)
-    ;(async () => {
-      const [{ data: taskRows, error: tErr }, { data: noteRows, error: nErr }] =
-        await Promise.all([
-          supabase.from("tasks").select("*"),
-          supabase.from("task_notes").select("*").order("position", { ascending: true }),
-        ])
-      if (!alive) return
-      if (tErr || nErr) {
-        console.warn("[tasks] load", tErr ?? nErr)
-        setLoading(false)
-        return
-      }
-      const notesByTask = new Map<string, TaskNote[]>()
-      for (const n of (noteRows ?? []) as NoteRow[]) {
-        const arr = notesByTask.get(n.task_id) ?? []
-        arr.push({ id: n.id, text: n.text, done: n.done })
-        notesByTask.set(n.task_id, arr)
-      }
-      setTasksState(
-        ((taskRows ?? []) as TaskRow[]).map((t) => ({
-          id: t.id,
-          date: t.date,
-          title: t.title,
-          done: t.done,
-          priority: t.priority as Priority,
-          pinned: t.pinned,
-          notes: notesByTask.get(t.id) ?? [],
-          order: t.order_index,
-          createdAt: Number(t.created_at) || 0,
-          completedAt: t.completed_at ?? undefined,
-        })),
-      )
-      setLoading(false)
-    })()
-    return () => {
-      alive = false
-    }
-  }, [user])
+  const { data, isPending } = useQuery({
+    queryKey,
+    queryFn: fetchTasks,
+    enabled: !!user,
+  })
+
+  const tasks = useMemo(() => data ?? [], [data])
+  const loading = !!user && isPending
 
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
@@ -165,9 +156,10 @@ export function useTasks() {
         ? (updater as (p: Task[]) => Task[])(tasksRef.current)
         : updater
     tasksRef.current = next
-    setTasksState(next)
+    queryClient.setQueryData(queryKey, next)
     return next
   }
+
 
   const insertTasks = async (list: Task[]) => {
     if (!user || !list.length) return
