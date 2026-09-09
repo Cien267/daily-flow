@@ -110,9 +110,9 @@ export default function Notes() {
           </div>
         ) : active ? (
           <>
-            <input value={active.title} onChange={(e) => updateActive({ title: e.target.value })}
+            <input key={active.id + ":title"} value={draft.title} onChange={(e) => updateActive({ title: e.target.value })}
               placeholder="Title" className="px-6 pt-6 pb-3 bg-transparent text-2xl font-bold text-foreground outline-none" />
-            <textarea value={active.body} onChange={(e) => updateActive({ body: e.target.value })}
+            <textarea key={active.id + ":body"} value={draft.body} onChange={(e) => updateActive({ body: e.target.value })}
               placeholder="Start writing..."
               className="flex-1 px-6 pb-6 bg-transparent text-sm text-foreground outline-none resize-none leading-relaxed" />
           </>
