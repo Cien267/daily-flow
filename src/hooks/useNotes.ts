@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -9,44 +9,37 @@ export interface Note {
   updatedAt: number
 }
 
+async function fetchNotes(): Promise<Note[]> {
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .order("updated_at", { ascending: false })
+  if (error) throw error
+  return (data ?? []).map((n) => ({
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    updatedAt: Number(n.updated_at) || 0,
+  }))
+}
+
 export function useNotes() {
   const { user } = useAuth()
-  const [notes, setNotes] = useState<Note[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const queryKey = ["notes", user?.id] as const
 
-  useEffect(() => {
-    if (!user) {
-      setNotes([])
-      setLoading(false)
-      return
-    }
-    let alive = true
-    setLoading(true)
-    supabase
-      .from("notes")
-      .select("*")
-      .order("updated_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!alive) return
-        if (error) {
-          console.warn("[notes] load", error)
-          setLoading(false)
-          return
-        }
-        setNotes(
-          (data ?? []).map((n) => ({
-            id: n.id,
-            title: n.title,
-            body: n.body,
-            updatedAt: Number(n.updated_at) || 0,
-          })),
-        )
-        setLoading(false)
-      })
-    return () => {
-      alive = false
-    }
-  }, [user])
+  const { data, isPending } = useQuery({
+    queryKey,
+    queryFn: fetchNotes,
+    enabled: !!user,
+  })
+
+  const notes = data ?? []
+  const loading = !!user && isPending
+
+  const setNotes = (updater: (prev: Note[]) => Note[]) => {
+    queryClient.setQueryData<Note[]>(queryKey, (prev) => updater(prev ?? []))
+  }
 
   const create = (): Note => {
     const n: Note = {
