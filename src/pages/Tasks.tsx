@@ -87,15 +87,26 @@ export default function Tasks() {
             <Button variant="ghost" size="icon" onClick={() => setDate(shiftDate(date, 1))} title="Next day">
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <label className="relative inline-flex cursor-pointer items-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground" title="Pick a date">
-              <CalendarDays className="h-4 w-4" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => e.target.value && setDate(e.target.value)}
-                className="absolute inset-0 cursor-pointer opacity-0"
-              />
-            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" title="Pick a date">
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={new Date(`${date}T00:00:00Z`)}
+                  onSelect={(d) => {
+                    if (!d) return
+                    const utc7 = new Date(d.getTime() + 7 * 60 * 60 * 1000)
+                    setDate(utc7.toISOString().slice(0, 10))
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
