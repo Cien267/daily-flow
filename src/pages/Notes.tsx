@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Plus, Trash2, Search } from "lucide-react"
+import { Plus, Trash2, Search, ChevronLeft } from "lucide-react"
 import { useNotes, Note } from "@/hooks/useNotes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ export default function Notes() {
   const { notes, loading, create: createNote, update, remove: removeNote } = useNotes()
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null)
   const [query, setQuery] = useState("")
+  const [mobileView, setMobileView] = useState<"list" | "editor">("list")
 
   useEffect(() => { if (!activeId && notes[0]) setActiveId(notes[0].id) }, [notes, activeId])
 
