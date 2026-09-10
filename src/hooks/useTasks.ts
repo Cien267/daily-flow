@@ -106,15 +106,38 @@ const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number
   position,
 })
 
-async function fetchTasks(): Promise<Task[]> {
-  const [{ data: taskRows, error: tErr }, { data: noteRows, error: nErr }] =
-    await Promise.all([
-      supabase.from("tasks").select("*"),
-      supabase.from("task_notes").select("*").order("position", { ascending: true }),
-    ])
-  if (tErr || nErr) throw tErr ?? nErr
+/**
+ * Stable fetch window for a given day: from the start of the previous month
+ * to the end of the next month, so navigating inside a month reuses the cache.
+ */
+export function rangeForDate(date: string): { from: string; to: string } {
+  const y = Number(date.slice(0, 4))
+  const m = Number(date.slice(5, 7)) - 1
+  const from = new Date(Date.UTC(y, m - 1, 1))
+  const to = new Date(Date.UTC(y, m + 2, 0))
+  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }
+}
+
+async function fetchTasks(from: string, to: string): Promise<Task[]> {
+  const { data: taskRows, error: tErr } = await supabase
+    .from("tasks")
+    .select("*")
+    .gte("date", from)
+    .lte("date", to)
+  if (tErr) throw tErr
+  const ids = ((taskRows ?? []) as unknown as TaskRow[]).map((t) => t.id)
+  let noteRows: unknown[] = []
+  if (ids.length) {
+    const { data, error: nErr } = await supabase
+      .from("task_notes")
+      .select("*")
+      .in("task_id", ids)
+      .order("position", { ascending: true })
+    if (nErr) throw nErr
+    noteRows = data ?? []
+  }
   const notesByTask = new Map<string, TaskNote[]>()
-  for (const n of (noteRows ?? []) as unknown as NoteRow[]) {
+  for (const n of noteRows as NoteRow[]) {
     const arr = notesByTask.get(n.task_id) ?? []
     arr.push({ id: n.id, text: n.text, done: n.done })
     notesByTask.set(n.task_id, arr)
@@ -133,14 +156,15 @@ async function fetchTasks(): Promise<Task[]> {
   }))
 }
 
-export function useTasks() {
+export function useTasks(anchorDate: string = todayKey()) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const queryKey = ["tasks", user?.id] as const
+  const { from, to } = useMemo(() => rangeForDate(anchorDate), [anchorDate])
+  const queryKey = ["tasks", user?.id, from, to] as const
 
-  const { data, isPending } = useQuery({
+  const { data, isPending } = useQuery<Task[]>({
     queryKey,
-    queryFn: fetchTasks,
+    queryFn: () => fetchTasks(from, to),
     enabled: !!user,
   })
 

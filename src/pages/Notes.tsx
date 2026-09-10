@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Plus, Trash2, Search } from "lucide-react"
+import { Plus, Trash2, Search, ChevronLeft } from "lucide-react"
 import { useNotes, Note } from "@/hooks/useNotes"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ export default function Notes() {
   const { notes, loading, create: createNote, update, remove: removeNote } = useNotes()
   const [activeId, setActiveId] = useState<string | null>(notes[0]?.id ?? null)
   const [query, setQuery] = useState("")
+  const [mobileView, setMobileView] = useState<"list" | "editor">("list")
 
   useEffect(() => { if (!activeId && notes[0]) setActiveId(notes[0].id) }, [notes, activeId])
 
@@ -38,6 +39,7 @@ export default function Notes() {
   const create = () => {
     const n = createNote()
     setActiveId(n.id)
+    setMobileView("editor")
   }
   const remove = (id: string) => {
     const next = notes.filter((n) => n.id !== id)
@@ -63,8 +65,10 @@ export default function Notes() {
   )
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] h-[calc(100vh-3rem)]">
-      <aside className="border-r border-border flex flex-col min-h-0">
+    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] h-[calc(100dvh-3rem)]">
+      <aside
+        className={`border-r border-border flex-col min-h-0 ${mobileView === "list" ? "flex" : "hidden"} md:flex`}
+      >
         <div className="p-3 border-b border-border space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Notes</h2>
@@ -86,7 +90,7 @@ export default function Notes() {
           {!loading && filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
           {filtered.map((n) => (
             <li key={n.id}>
-              <button onClick={() => setActiveId(n.id)}
+              <button onClick={() => { setActiveId(n.id); setMobileView("editor") }}
                 className={`group w-full text-left px-3 py-2.5 border-b border-border hover:bg-accent/50 ${activeId === n.id ? "bg-accent" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium truncate">{n.title || "Untitled"}</span>
@@ -100,7 +104,15 @@ export default function Notes() {
         </ul>
       </aside>
 
-      <section className="flex flex-col min-h-0">
+      <section
+        className={`flex-col min-h-0 ${mobileView === "editor" ? "flex" : "hidden"} md:flex`}
+      >
+        <button
+          onClick={() => setMobileView("list")}
+          className="md:hidden flex items-center gap-1 px-4 py-2 text-xs text-muted-foreground border-b border-border"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> All notes
+        </button>
         {loading ? (
           <div className="px-6 pt-6 space-y-3">
             <div className="h-7 w-1/3 animate-pulse rounded bg-muted" />
