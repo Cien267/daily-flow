@@ -88,7 +88,7 @@ export default function Notes() {
           {!loading && filtered.length === 0 && <li className="p-4 text-xs text-muted-foreground text-center">No notes</li>}
           {filtered.map((n) => (
             <li key={n.id}>
-              <button onClick={() => setActiveId(n.id)}
+              <button onClick={() => { setActiveId(n.id); setMobileView("editor") }}
                 className={`group w-full text-left px-3 py-2.5 border-b border-border hover:bg-accent/50 ${activeId === n.id ? "bg-accent" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium truncate">{n.title || "Untitled"}</span>
@@ -102,7 +102,15 @@ export default function Notes() {
         </ul>
       </aside>
 
-      <section className="flex flex-col min-h-0">
+      <section
+        className={`flex-col min-h-0 ${mobileView === "editor" ? "flex" : "hidden"} md:flex`}
+      >
+        <button
+          onClick={() => setMobileView("list")}
+          className="md:hidden flex items-center gap-1 px-4 py-2 text-xs text-muted-foreground border-b border-border"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> All notes
+        </button>
         {loading ? (
           <div className="px-6 pt-6 space-y-3">
             <div className="h-7 w-1/3 animate-pulse rounded bg-muted" />
