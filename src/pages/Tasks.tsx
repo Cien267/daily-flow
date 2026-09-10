@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, CopyPlus, Copy, ListPlus, Eraser, Flag } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, CalendarIcon, CopyPlus, Copy, ListPlus, Eraser, Flag } from "lucide-react"
+import { format } from "date-fns"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { toast } from "sonner"
 import TaskItem from "@/components/TaskItem"
 import {
