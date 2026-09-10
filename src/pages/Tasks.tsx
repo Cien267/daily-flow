@@ -16,8 +16,8 @@ const pColor: Record<Priority, string> = {
 }
 
 export default function Tasks() {
-  const t = useTasks()
   const [date, setDate] = useState(todayKey())
+  const t = useTasks(date)
   const [title, setTitle] = useState("")
   const [priority, setPriority] = useState<Priority>("med")
   const [bulkOpen, setBulkOpen] = useState(false)
