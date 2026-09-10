@@ -156,14 +156,15 @@ async function fetchTasks(from: string, to: string): Promise<Task[]> {
   }))
 }
 
-export function useTasks() {
+export function useTasks(anchorDate: string = todayKey()) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const queryKey = ["tasks", user?.id] as const
+  const { from, to } = useMemo(() => rangeForDate(anchorDate), [anchorDate])
+  const queryKey = ["tasks", user?.id, from, to] as const
 
-  const { data, isPending } = useQuery({
+  const { data, isPending } = useQuery<Task[]>({
     queryKey,
-    queryFn: fetchTasks,
+    queryFn: () => fetchTasks(from, to),
     enabled: !!user,
   })
 
