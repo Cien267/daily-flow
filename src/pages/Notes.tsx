@@ -63,8 +63,10 @@ export default function Notes() {
   )
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] h-[calc(100vh-3rem)]">
-      <aside className="border-r border-border flex flex-col min-h-0">
+    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] h-[calc(100dvh-3rem)]">
+      <aside
+        className={`border-r border-border flex-col min-h-0 ${mobileView === "list" ? "flex" : "hidden"} md:flex`}
+      >
         <div className="p-3 border-b border-border space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Notes</h2>
