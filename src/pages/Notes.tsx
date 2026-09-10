@@ -39,6 +39,7 @@ export default function Notes() {
   const create = () => {
     const n = createNote()
     setActiveId(n.id)
+    setMobileView("editor")
   }
   const remove = (id: string) => {
     const next = notes.filter((n) => n.id !== id)
