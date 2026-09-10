@@ -66,15 +66,15 @@ export default function Tasks() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
+    <div className="mx-auto max-w-2xl px-4 py-6 md:py-14">
       {/* Day header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">{formatDayLabel(date)}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{formatDaySub(date)}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{formatDayLabel(date)}</h1>
+            <p className="mt-1 text-xs md:text-sm text-muted-foreground">{formatDaySub(date)}</p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <Button variant="ghost" size="icon" onClick={() => setDate(shiftDate(date, -1))} title="Previous day">
               <ChevronLeft className="h-4 w-4" />
             </Button>
