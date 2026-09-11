@@ -39,7 +39,7 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
+                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2" onClick={() => setOpenMobile(false)}>
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
