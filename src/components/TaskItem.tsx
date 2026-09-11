@@ -110,9 +110,9 @@ export default function TaskItem({
         <button onClick={cyclePriority} className={pColor[task.priority]} title={`Priority: ${task.priority}`}>
           <Flag className="h-3.5 w-3.5" />
         </button>
-        <input
+        <DebouncedInput
           value={task.title}
-          onChange={(e) => onUpdate({ title: e.target.value })}
+          onCommit={(v) => onUpdate({ title: v })}
           className={`flex-1 bg-transparent text-sm outline-none ${
             task.done ? "text-muted-foreground line-through" : "text-foreground"
           }`}
