@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Trash2, Flag, ArrowUp, ArrowDown, Plus, Pin, CornerDownRight, X } from "lucide-react"
 import { Task, Priority } from "@/hooks/useTasks"
 
@@ -6,6 +6,67 @@ const pColor: Record<Priority, string> = {
   low: "text-muted-foreground",
   med: "text-yellow-500",
   high: "text-red-500",
+}
+
+/**
+ * Input that keeps a local draft while typing and only commits the value
+ * after 600ms of inactivity (or on blur). Prevents per-keystroke API calls
+ * from hijacking the caret and breaking Vietnamese IME composition.
+ */
+function DebouncedInput({
+  value,
+  onCommit,
+  className,
+  placeholder,
+  autoFocus,
+  onKeyDown,
+  onBlur,
+}: {
+  value: string
+  onCommit: (v: string) => void
+  className?: string
+  placeholder?: string
+  autoFocus?: boolean
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  onBlur?: () => void
+}) {
+  const [draft, setDraft] = useState(value)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dirty = useRef(false)
+
+  // Sync external value in only while the user isn't editing
+  useEffect(() => {
+    if (!dirty.current) setDraft(value)
+  }, [value])
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+
+  const flush = () => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null }
+    if (dirty.current) { dirty.current = false; onCommit(draft) }
+  }
+
+  return (
+    <input
+      value={draft}
+      placeholder={placeholder}
+      autoFocus={autoFocus}
+      onChange={(e) => {
+        const v = e.target.value
+        setDraft(v)
+        dirty.current = true
+        if (timer.current) clearTimeout(timer.current)
+        timer.current = setTimeout(() => {
+          dirty.current = false
+          timer.current = null
+          onCommit(v)
+        }, 600)
+      }}
+      onKeyDown={onKeyDown}
+      onBlur={() => { flush(); onBlur?.() }}
+      className={className}
+    />
+  )
 }
 
 interface Props {
@@ -49,9 +110,9 @@ export default function TaskItem({
         <button onClick={cyclePriority} className={pColor[task.priority]} title={`Priority: ${task.priority}`}>
           <Flag className="h-3.5 w-3.5" />
         </button>
-        <input
+        <DebouncedInput
           value={task.title}
-          onChange={(e) => onUpdate({ title: e.target.value })}
+          onCommit={(v) => onUpdate({ title: v })}
           className={`flex-1 bg-transparent text-sm outline-none ${
             task.done ? "text-muted-foreground line-through" : "text-foreground"
           }`}
@@ -84,9 +145,9 @@ export default function TaskItem({
           {task.notes.map((n) => (
             <li key={n.id} className="group/note flex items-center gap-2">
               <span className="text-muted-foreground">•</span>
-              <input
+              <DebouncedInput
                 value={n.text}
-                onChange={(e) => onUpdateNote(n.id, e.target.value)}
+                onCommit={(v) => onUpdateNote(n.id, v)}
                 className="flex-1 bg-transparent text-xs text-muted-foreground outline-none focus:text-foreground"
               />
               <button

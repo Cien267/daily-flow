@@ -8,7 +8,7 @@ export default function AppLayout() {
       <div className="min-h-[100dvh] flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 flex items-center border-b border-border px-3 sticky top-0 z-10 bg-background/80 backdrop-blur pt-[env(safe-area-inset-top)]">
+          <header className="min-h-12 flex items-center border-b border-border px-3 sticky top-0 z-10 bg-background/80 backdrop-blur pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-2">
             <SidebarTrigger />
             <span className="ml-3 text-xs text-muted-foreground font-mono">focus.suite</span>
           </header>

@@ -23,7 +23,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
@@ -31,7 +31,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="pt-[env(safe-area-inset-top)]">
         <SidebarGroup>
           <SidebarGroupLabel>{collapsed ? "" : "Focus Suite"}</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -39,7 +39,7 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2">
+                    <NavLink to={item.url} end={item.url === "/"} className="flex items-center gap-2" onClick={() => setOpenMobile(false)}>
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
