@@ -145,9 +145,9 @@ export default function TaskItem({
           {task.notes.map((n) => (
             <li key={n.id} className="group/note flex items-center gap-2">
               <span className="text-muted-foreground">•</span>
-              <input
+              <DebouncedInput
                 value={n.text}
-                onChange={(e) => onUpdateNote(n.id, e.target.value)}
+                onCommit={(v) => onUpdateNote(n.id, v)}
                 className="flex-1 bg-transparent text-xs text-muted-foreground outline-none focus:text-foreground"
               />
               <button
