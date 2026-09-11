@@ -23,7 +23,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
@@ -31,7 +31,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="pt-[env(safe-area-inset-top)]">
         <SidebarGroup>
           <SidebarGroupLabel>{collapsed ? "" : "Focus Suite"}</SidebarGroupLabel>
           <SidebarGroupContent>
