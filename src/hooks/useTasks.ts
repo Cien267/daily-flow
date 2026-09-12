@@ -505,10 +505,11 @@ export function useTasks(date: string = todayKey()) {
     }
   }
 
-  const activeDates = useMemo(
-    () => Array.from(byDate.keys()).sort((a, b) => b.localeCompare(a)),
-    [byDate],
-  )
+  const activeDates = useMemo(() => {
+    const set = new Set(dateRows ?? [])
+    if (tasksRef.current.length) set.add(date)
+    return Array.from(set).sort((a, b) => b.localeCompare(a))
+  }, [dateRows, date])
 
   return {
     tasks,

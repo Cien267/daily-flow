@@ -51,17 +51,17 @@ export default function Tasks() {
     setBulkOpen(false)
   }
 
-  const doCarry = () => {
+  const doCarry = async () => {
     const from = shiftDate(date, -1)
-    const n = t.carryOver(from, date)
+    const n = await t.carryOver(from, date)
     toast[n ? "success" : "info"](
       n ? `Carried over ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to carry over",
     )
   }
 
-  const doCloneYesterday = () => {
+  const doCloneYesterday = async () => {
     const from = shiftDate(date, -1)
-    const n = t.cloneFromDate(from, date)
+    const n = await t.cloneFromDate(from, date)
     toast[n ? "success" : "info"](
       n ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to clone",
     )
