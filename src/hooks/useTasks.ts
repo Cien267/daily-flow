@@ -106,24 +106,12 @@ const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number
   position,
 })
 
-/**
- * Stable fetch window for a given day: from the start of the previous month
- * to the end of the next month, so navigating inside a month reuses the cache.
- */
-export function rangeForDate(date: string): { from: string; to: string } {
-  const y = Number(date.slice(0, 4))
-  const m = Number(date.slice(5, 7)) - 1
-  const from = new Date(Date.UTC(y, m - 1, 1))
-  const to = new Date(Date.UTC(y, m + 2, 0))
-  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }
-}
-
-async function fetchTasks(from: string, to: string): Promise<Task[]> {
+/** Fetch exactly one day of tasks (plus their notes). */
+async function fetchTasks(date: string): Promise<Task[]> {
   const { data: taskRows, error: tErr } = await supabase
     .from("tasks")
     .select("*")
-    .gte("date", from)
-    .lte("date", to)
+    .eq("date", date)
   if (tErr) throw tErr
   const ids = ((taskRows ?? []) as unknown as TaskRow[]).map((t) => t.id)
   let noteRows: unknown[] = []
