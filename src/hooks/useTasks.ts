@@ -430,6 +430,19 @@ export function useTasks(date: string = todayKey()) {
       .then(({ error }) => error && console.warn("[tasks] remove note", error))
   }
 
+  /** Get tasks of any date: from cache if already fetched, otherwise one API call. */
+  const getDayTasks = (day: string): Promise<Task[]> => {
+    if (!user) return Promise.resolve([])
+    const key = ["tasks", user.id, day] as const
+    const cached = queryClient.getQueryData<Task[]>(key)
+    if (cached) return Promise.resolve(cached)
+    return queryClient.fetchQuery({
+      queryKey: key,
+      queryFn: () => fetchTasks(day),
+      staleTime: Infinity,
+    })
+  }
+
   /** Clone helper: copy picked tasks into target date as fresh active tasks. */
   const cloneTasks = (source: Task[], to: string) => {
     const existing = new Set(
@@ -454,7 +467,7 @@ export function useTasks(date: string = todayKey()) {
   }
 
   /** Copy unfinished (and/or pinned/routine) tasks from a source day into target day. */
-  const carryOver = (
+  const carryOver = async (
     from: string,
     to: string,
     opts: { unfinished?: boolean; pinned?: boolean } = {
@@ -462,7 +475,8 @@ export function useTasks(date: string = todayKey()) {
       pinned: true,
     },
   ) => {
-    const source = (byDate.get(from) ?? []).filter(
+    const dayTasks = await getDayTasks(from)
+    const source = dayTasks.filter(
       (t) => (opts.unfinished && !t.done) || (opts.pinned && t.pinned),
     )
     if (!source.length) return 0
@@ -470,8 +484,8 @@ export function useTasks(date: string = todayKey()) {
   }
 
   /** Clone every task from a source day into target day, resetting all tasks to active. */
-  const cloneFromDate = (from: string, to: string) => {
-    const source = byDate.get(from) ?? []
+  const cloneFromDate = async (from: string, to: string) => {
+    const source = await getDayTasks(from)
     if (!source.length) return 0
     return cloneTasks(source, to)
   }
