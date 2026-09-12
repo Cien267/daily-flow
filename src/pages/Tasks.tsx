@@ -51,17 +51,17 @@ export default function Tasks() {
     setBulkOpen(false)
   }
 
-  const doCarry = () => {
+  const doCarry = async () => {
     const from = shiftDate(date, -1)
-    const n = t.carryOver(from, date)
+    const n = await t.carryOver(from, date)
     toast[n ? "success" : "info"](
       n ? `Carried over ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to carry over",
     )
   }
 
-  const doCloneYesterday = () => {
+  const doCloneYesterday = async () => {
     const from = shiftDate(date, -1)
-    const n = t.cloneFromDate(from, date)
+    const n = await t.cloneFromDate(from, date)
     toast[n ? "success" : "info"](
       n ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to clone",
     )
@@ -239,22 +239,16 @@ export default function Tasks() {
         <div className="mt-10 border-t border-border pt-5">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Other days</h2>
           <div className="space-y-1">
-            {recentDays.map((d) => {
-              const list = t.forDate(d)
-              const done = list.filter((x) => x.done).length
-              return (
-                <button
-                  key={d}
-                  onClick={() => setDate(d)}
-                  className="flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                >
-                  <span>{formatDayLabel(d)}</span>
-                  <span className="font-mono text-xs">
-                    {done}/{list.length}
-                  </span>
-                </button>
-              )
-            })}
+            {recentDays.map((d) => (
+              <button
+                key={d}
+                onClick={() => setDate(d)}
+                className="flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                <span>{formatDayLabel(d)}</span>
+                <span className="font-mono text-xs">{formatDaySub(d)}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}

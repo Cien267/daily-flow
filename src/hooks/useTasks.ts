@@ -106,24 +106,12 @@ const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number
   position,
 })
 
-/**
- * Stable fetch window for a given day: from the start of the previous month
- * to the end of the next month, so navigating inside a month reuses the cache.
- */
-export function rangeForDate(date: string): { from: string; to: string } {
-  const y = Number(date.slice(0, 4))
-  const m = Number(date.slice(5, 7)) - 1
-  const from = new Date(Date.UTC(y, m - 1, 1))
-  const to = new Date(Date.UTC(y, m + 2, 0))
-  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }
-}
-
-async function fetchTasks(from: string, to: string): Promise<Task[]> {
+/** Fetch exactly one day of tasks (plus their notes). */
+async function fetchTasks(date: string): Promise<Task[]> {
   const { data: taskRows, error: tErr } = await supabase
     .from("tasks")
     .select("*")
-    .gte("date", from)
-    .lte("date", to)
+    .eq("date", date)
   if (tErr) throw tErr
   const ids = ((taskRows ?? []) as unknown as TaskRow[]).map((t) => t.id)
   let noteRows: unknown[] = []
@@ -156,15 +144,27 @@ async function fetchTasks(from: string, to: string): Promise<Task[]> {
   }))
 }
 
-export function useTasks(anchorDate: string = todayKey()) {
+export function useTasks(date: string = todayKey()) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const { from, to } = useMemo(() => rangeForDate(anchorDate), [anchorDate])
-  const queryKey = ["tasks", user?.id, from, to] as const
+  const queryKey = ["tasks", user?.id, date] as const
 
   const { data, isPending } = useQuery<Task[]>({
     queryKey,
-    queryFn: () => fetchTasks(from, to),
+    queryFn: () => fetchTasks(date),
+    enabled: !!user,
+    // Once a day is fetched, don't refetch it — mutations keep the cache fresh.
+    staleTime: Infinity,
+  })
+
+  // Lightweight list of all dates that have tasks (for the "Other days" section).
+  const { data: dateRows } = useQuery({
+    queryKey: ["task-dates", user?.id] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tasks").select("date")
+      if (error) throw error
+      return (data ?? []).map((r) => r.date as string)
+    },
     enabled: !!user,
   })
 
@@ -430,6 +430,19 @@ export function useTasks(anchorDate: string = todayKey()) {
       .then(({ error }) => error && console.warn("[tasks] remove note", error))
   }
 
+  /** Get tasks of any date: from cache if already fetched, otherwise one API call. */
+  const getDayTasks = (day: string): Promise<Task[]> => {
+    if (!user) return Promise.resolve([])
+    const key = ["tasks", user.id, day] as const
+    const cached = queryClient.getQueryData<Task[]>(key)
+    if (cached) return Promise.resolve(cached)
+    return queryClient.fetchQuery({
+      queryKey: key,
+      queryFn: () => fetchTasks(day),
+      staleTime: Infinity,
+    })
+  }
+
   /** Clone helper: copy picked tasks into target date as fresh active tasks. */
   const cloneTasks = (source: Task[], to: string) => {
     const existing = new Set(
@@ -454,7 +467,7 @@ export function useTasks(anchorDate: string = todayKey()) {
   }
 
   /** Copy unfinished (and/or pinned/routine) tasks from a source day into target day. */
-  const carryOver = (
+  const carryOver = async (
     from: string,
     to: string,
     opts: { unfinished?: boolean; pinned?: boolean } = {
@@ -462,7 +475,8 @@ export function useTasks(anchorDate: string = todayKey()) {
       pinned: true,
     },
   ) => {
-    const source = (byDate.get(from) ?? []).filter(
+    const dayTasks = await getDayTasks(from)
+    const source = dayTasks.filter(
       (t) => (opts.unfinished && !t.done) || (opts.pinned && t.pinned),
     )
     if (!source.length) return 0
@@ -470,8 +484,8 @@ export function useTasks(anchorDate: string = todayKey()) {
   }
 
   /** Clone every task from a source day into target day, resetting all tasks to active. */
-  const cloneFromDate = (from: string, to: string) => {
-    const source = byDate.get(from) ?? []
+  const cloneFromDate = async (from: string, to: string) => {
+    const source = await getDayTasks(from)
     if (!source.length) return 0
     return cloneTasks(source, to)
   }
@@ -491,10 +505,11 @@ export function useTasks(anchorDate: string = todayKey()) {
     }
   }
 
-  const activeDates = useMemo(
-    () => Array.from(byDate.keys()).sort((a, b) => b.localeCompare(a)),
-    [byDate],
-  )
+  const activeDates = useMemo(() => {
+    const set = new Set(dateRows ?? [])
+    if (tasksRef.current.length) set.add(date)
+    return Array.from(set).sort((a, b) => b.localeCompare(a))
+  }, [dateRows, date])
 
   return {
     tasks,
