@@ -144,15 +144,27 @@ async function fetchTasks(date: string): Promise<Task[]> {
   }))
 }
 
-export function useTasks(anchorDate: string = todayKey()) {
+export function useTasks(date: string = todayKey()) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const { from, to } = useMemo(() => rangeForDate(anchorDate), [anchorDate])
-  const queryKey = ["tasks", user?.id, from, to] as const
+  const queryKey = ["tasks", user?.id, date] as const
 
   const { data, isPending } = useQuery<Task[]>({
     queryKey,
-    queryFn: () => fetchTasks(from, to),
+    queryFn: () => fetchTasks(date),
+    enabled: !!user,
+    // Once a day is fetched, don't refetch it — mutations keep the cache fresh.
+    staleTime: Infinity,
+  })
+
+  // Lightweight list of all dates that have tasks (for the "Other days" section).
+  const { data: dateRows } = useQuery({
+    queryKey: ["task-dates", user?.id] as const,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tasks").select("date")
+      if (error) throw error
+      return (data ?? []).map((r) => r.date as string)
+    },
     enabled: !!user,
   })
 
