@@ -95,7 +95,7 @@ export default function Notes() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium truncate">{n.title || "Untitled"}</span>
                   <Trash2 onClick={(e) => { e.stopPropagation(); remove(n.id) }}
-                    className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive shrink-0" />
+                    className="h-3 w-3 text-muted-foreground md:opacity-0 md:group-hover:opacity-100 hover:text-destructive shrink-0" />
                 </div>
                 <div className="text-xs text-muted-foreground truncate mt-0.5">{n.body.slice(0, 60) || "Empty"}</div>
               </button>
