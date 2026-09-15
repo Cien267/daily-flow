@@ -33,7 +33,7 @@ CREATE TABLE public.schedule_blocks (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   start_time TEXT NOT NULL,
-  end_time TEXT NOT NULL,
+  end_time TEXT,
   category TEXT NOT NULL DEFAULT 'deep-work',
   description TEXT DEFAULT '',
   energy INT DEFAULT 3,
