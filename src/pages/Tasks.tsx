@@ -1,14 +1,33 @@
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, Plus, CalendarIcon, CopyPlus, Copy, ListPlus, Eraser, Flag } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  CalendarIcon,
+  CopyPlus,
+  Copy,
+  ListPlus,
+  Eraser,
+  Flag,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { toast } from "sonner"
 import TaskItem from "@/components/TaskItem"
 import {
-  useTasks, todayKey, shiftDate, formatDayLabel, formatDaySub, Priority,
+  useTasks,
+  todayKey,
+  shiftDate,
+  formatDayLabel,
+  formatDaySub,
+  Priority,
 } from "@/hooks/useTasks"
 
 const pColor: Record<Priority, string> = {
@@ -28,9 +47,13 @@ export default function Tasks() {
 
   const isPastDay = date < todayKey()
   const dayTasks = t.forDate(date)
-  const visible = dayTasks.filter((x) => (filter === "all" ? true : filter === "active" ? !x.done : x.done))
+  const visible = dayTasks.filter((x) =>
+    filter === "all" ? true : filter === "active" ? !x.done : x.done,
+  )
   const doneCount = dayTasks.filter((x) => x.done).length
-  const progress = dayTasks.length ? Math.round((doneCount / dayTasks.length) * 100) : 0
+  const progress = dayTasks.length
+    ? Math.round((doneCount / dayTasks.length) * 100)
+    : 0
 
   const recentDays = useMemo(
     () => t.activeDates.filter((d) => d !== date).slice(0, 6),
@@ -55,15 +78,27 @@ export default function Tasks() {
     const from = shiftDate(date, -1)
     const n = await t.carryOver(from, date)
     toast[n ? "success" : "info"](
-      n ? `Carried over ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to carry over",
+      n
+        ? `Carried over ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}`
+        : "Nothing to carry over",
     )
   }
 
   const doCloneYesterday = async () => {
-    const from = shiftDate(date, -1)
-    const n = await t.cloneFromDate(from, date)
+    let from = shiftDate(date, -1)
+    let n = 0
+    const maxDays = 30
+    for (let i = 0; i < maxDays; i++) {
+      n = await t.cloneFromDate(from, date)
+
+      if (n > 0) break
+
+      from = shiftDate(from, -1)
+    }
     toast[n ? "success" : "info"](
-      n ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}` : "Nothing to clone",
+      n
+        ? `Cloned ${n} task${n > 1 ? "s" : ""} from ${formatDayLabel(from)}`
+        : "Nothing to clone",
     )
   }
 
@@ -73,17 +108,36 @@ export default function Tasks() {
       <div className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{formatDayLabel(date)}</h1>
-            <p className="mt-1 text-xs md:text-sm text-muted-foreground">{formatDaySub(date)}</p>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              {formatDayLabel(date)}
+            </h1>
+            <p className="mt-1 text-xs md:text-sm text-muted-foreground">
+              {formatDaySub(date)}
+            </p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" onClick={() => setDate(shiftDate(date, -1))} title="Previous day">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDate(shiftDate(date, -1))}
+              title="Previous day"
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setDate(todayKey())} disabled={date === todayKey()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDate(todayKey())}
+              disabled={date === todayKey()}
+            >
               Today
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setDate(shiftDate(date, 1))} title="Next day">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDate(shiftDate(date, 1))}
+              title="Next day"
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Popover>
@@ -111,7 +165,10 @@ export default function Tasks() {
 
         <div className="mt-4 flex items-center gap-3">
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progress}%` }}
+            />
           </div>
           <span className="font-mono text-xs text-muted-foreground">
             {doneCount}/{dayTasks.length}
@@ -123,7 +180,11 @@ export default function Tasks() {
       <div className="flex gap-2">
         <Input
           disabled={isPastDay}
-          placeholder={isPastDay ? "Không thể thêm task cho ngày đã qua" : "Add a task for this day…"}
+          placeholder={
+            isPastDay
+              ? "Không thể thêm task cho ngày đã qua"
+              : "Add a task for this day…"
+          }
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submitAdd()}
@@ -138,7 +199,11 @@ export default function Tasks() {
         />
         <button
           disabled={isPastDay}
-          onClick={() => setPriority(priority === "low" ? "med" : priority === "med" ? "high" : "low")}
+          onClick={() =>
+            setPriority(
+              priority === "low" ? "med" : priority === "med" ? "high" : "low",
+            )
+          }
           className={`rounded-md border border-border px-3 ${pColor[priority]} disabled:opacity-40`}
           title={`Priority: ${priority}`}
         >
@@ -151,17 +216,38 @@ export default function Tasks() {
 
       {/* Actions */}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={doCarry} disabled={isPastDay}>
-          <CopyPlus className="h-3.5 w-3.5" /> Carry over from {formatDayLabel(shiftDate(date, -1))}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={doCarry}
+          disabled={isPastDay}
+        >
+          <CopyPlus className="h-3.5 w-3.5" /> Carry over from{" "}
+          {formatDayLabel(shiftDate(date, -1))}
         </Button>
-        <Button variant="outline" size="sm" onClick={doCloneYesterday} disabled={isPastDay}>
-          <Copy className="h-3.5 w-3.5" /> Clone from {formatDayLabel(shiftDate(date, -1))}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={doCloneYesterday}
+          disabled={isPastDay}
+        >
+          <Copy className="h-3.5 w-3.5" /> Clone from{" "}
+          {formatDayLabel(shiftDate(date, -1))}
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setBulkOpen((v) => !v)} disabled={isPastDay}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setBulkOpen((v) => !v)}
+          disabled={isPastDay}
+        >
           <ListPlus className="h-3.5 w-3.5" /> Bulk add
         </Button>
         {doneCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => t.clearCompleted(date)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => t.clearCompleted(date)}
+          >
             <Eraser className="h-3.5 w-3.5" /> Clear done
           </Button>
         )}
@@ -177,14 +263,29 @@ export default function Tasks() {
             onKeyDown={(e) => {
               if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submitBulk()
             }}
-            placeholder={"One task per line\n! prefix = high priority, ~ = low\n- indented lines become notes of the task above"}
+            placeholder={
+              "One task per line\n! prefix = high priority, ~ = low\n- indented lines become notes of the task above"
+            }
             className="resize-y font-mono text-xs"
           />
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">⌘/Ctrl + Enter to add</span>
+            <span className="text-xs text-muted-foreground">
+              ⌘/Ctrl + Enter to add
+            </span>
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { setBulk(""); setBulkOpen(false) }}>Cancel</Button>
-              <Button size="sm" onClick={submitBulk}>Add all</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setBulk("")
+                  setBulkOpen(false)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={submitBulk}>
+                Add all
+              </Button>
             </div>
           </div>
         </div>
@@ -197,7 +298,9 @@ export default function Tasks() {
             key={f}
             onClick={() => setFilter(f)}
             className={`rounded-md px-2.5 py-1 capitalize ${
-              filter === f ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+              filter === f
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {f}
@@ -209,7 +312,10 @@ export default function Tasks() {
       <ul className="space-y-1.5">
         {t.loading &&
           Array.from({ length: 4 }).map((_, i) => (
-            <li key={i} className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-3">
+            <li
+              key={i}
+              className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-3"
+            >
               <div className="h-4 w-4 animate-pulse rounded bg-muted" />
               <div className="h-3.5 flex-1 animate-pulse rounded bg-muted" />
             </li>
@@ -237,7 +343,9 @@ export default function Tasks() {
       {/* Other days */}
       {recentDays.length > 0 && (
         <div className="mt-10 border-t border-border pt-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Other days</h2>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Other days
+          </h2>
           <div className="space-y-1">
             {recentDays.map((d) => (
               <button
