@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from "react"
-import { Trash2, Flag, ArrowUp, ArrowDown, Plus, Pin, CornerDownRight, X } from "lucide-react"
+import {
+  Trash2,
+  Flag,
+  ArrowUp,
+  ArrowDown,
+  Plus,
+  Pin,
+  CornerDownRight,
+  X,
+} from "lucide-react"
 import { Task, Priority } from "@/hooks/useTasks"
 
 const pColor: Record<Priority, string> = {
@@ -39,11 +48,22 @@ function DebouncedInput({
     if (!dirty.current) setDraft(value)
   }, [value])
 
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current)
+    },
+    [],
+  )
 
   const flush = () => {
-    if (timer.current) { clearTimeout(timer.current); timer.current = null }
-    if (dirty.current) { dirty.current = false; onCommit(draft) }
+    if (timer.current) {
+      clearTimeout(timer.current)
+      timer.current = null
+    }
+    if (dirty.current) {
+      dirty.current = false
+      onCommit(draft)
+    }
   }
 
   return (
@@ -63,7 +83,10 @@ function DebouncedInput({
         }, 600)
       }}
       onKeyDown={onKeyDown}
-      onBlur={() => { flush(); onBlur?.() }}
+      onBlur={() => {
+        flush()
+        onBlur?.()
+      }}
       className={className}
     />
   )
@@ -81,7 +104,14 @@ interface Props {
 }
 
 export default function TaskItem({
-  task, onToggle, onRemove, onMove, onUpdate, onAddNote, onUpdateNote, onRemoveNote,
+  task,
+  onToggle,
+  onRemove,
+  onMove,
+  onUpdate,
+  onAddNote,
+  onUpdateNote,
+  onRemoveNote,
 }: Props) {
   const [noteDraft, setNoteDraft] = useState("")
   const [showNoteInput, setShowNoteInput] = useState(false)
@@ -107,17 +137,21 @@ export default function TaskItem({
           className="h-4 w-4 shrink-0 accent-primary"
           aria-label={`Toggle ${task.title}`}
         />
-        <button onClick={cyclePriority} className={pColor[task.priority]} title={`Priority: ${task.priority}`}>
+        <button
+          onClick={cyclePriority}
+          className={pColor[task.priority]}
+          title={`Priority: ${task.priority}`}
+        >
           <Flag className="h-3.5 w-3.5" />
         </button>
         <DebouncedInput
           value={task.title}
           onCommit={(v) => onUpdate({ title: v })}
-          className={`flex-1 bg-transparent text-sm outline-none ${
+          className={`flex-1 bg-transparent text-sm outline-none truncate ${
             task.done ? "text-muted-foreground line-through" : "text-foreground"
           }`}
         />
-        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <div className="flex items-center gap-1 md:opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
             onClick={() => onUpdate({ pinned: !task.pinned })}
             title={task.pinned ? "Unpin routine" : "Mark as routine"}
@@ -125,16 +159,29 @@ export default function TaskItem({
           >
             <Pin className="h-3 w-3" />
           </button>
-          <button onClick={() => setShowNoteInput(true)} title="Add note" className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground">
+          <button
+            onClick={() => setShowNoteInput(true)}
+            title="Add note"
+            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
             <Plus className="h-3 w-3" />
           </button>
-          <button onClick={() => onMove(-1)} className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground">
+          <button
+            onClick={() => onMove(-1)}
+            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
             <ArrowUp className="h-3 w-3" />
           </button>
-          <button onClick={() => onMove(1)} className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground">
+          <button
+            onClick={() => onMove(1)}
+            className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
             <ArrowDown className="h-3 w-3" />
           </button>
-          <button onClick={onRemove} className="rounded p-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive">
+          <button
+            onClick={onRemove}
+            className="rounded p-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+          >
             <Trash2 className="h-3 w-3" />
           </button>
         </div>
@@ -168,7 +215,10 @@ export default function TaskItem({
                 onChange={(e) => setNoteDraft(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") submitNote()
-                  if (e.key === "Escape") { setNoteDraft(""); setShowNoteInput(false) }
+                  if (e.key === "Escape") {
+                    setNoteDraft("")
+                    setShowNoteInput(false)
+                  }
                 }}
                 onBlur={submitNote}
                 className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
