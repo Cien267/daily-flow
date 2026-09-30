@@ -332,6 +332,7 @@ export default function Tasks() {
             onToggle={() => t.toggle(task.id)}
             onRemove={() => t.remove(task.id)}
             onMove={(dir) => t.move(task.id, dir)}
+            onMoveToTop={() => t.moveToTop(task.id)}
             onUpdate={(patch) => t.updateTask(task.id, patch)}
             onAddNote={(text) => t.addNote(task.id, text)}
             onUpdateNote={(nid, text) => t.updateNote(task.id, nid, text)}

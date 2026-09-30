@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/hooks/useAuth"
 
-
 export type Priority = "low" | "med" | "high"
 
 export interface TaskNote {
@@ -97,7 +96,12 @@ const taskToRow = (t: Task, userId: string) => ({
   completed_at: t.completedAt ?? null,
 })
 
-const noteToRow = (n: TaskNote, taskId: string, userId: string, position: number) => ({
+const noteToRow = (
+  n: TaskNote,
+  taskId: string,
+  userId: string,
+  position: number,
+) => ({
   id: n.id,
   task_id: taskId,
   user_id: userId,
@@ -184,7 +188,6 @@ export function useTasks(date: string = todayKey()) {
     return next
   }
 
-
   const insertTasks = async (list: Task[]) => {
     if (!user || !list.length) return
     const { error } = await supabase
@@ -202,7 +205,6 @@ export function useTasks(date: string = todayKey()) {
       if (nErr) console.warn("[tasks] insert notes", nErr)
     }
   }
-
 
   const patchTask = (id: string, patch: Partial<Task>) => {
     const row: {
@@ -335,9 +337,7 @@ export function useTasks(date: string = todayKey()) {
       done: !current.done,
       completedAt: !current.done ? Date.now() : undefined,
     }
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...patch } : t)),
-    )
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)))
     patchTask(id, patch)
   }
 
@@ -372,6 +372,33 @@ export function useTasks(date: string = todayKey()) {
     )
     patchTask(a.id, { order: b.order })
     patchTask(b.id, { order: a.order })
+  }
+
+  const moveToTop = (id: string) => {
+    const task = tasksRef.current.find((t) => t.id === id)
+    if (!task) return
+
+    const list = tasksRef.current
+      .filter((t) => t.date === task.date)
+      .sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
+
+    const i = list.findIndex((t) => t.id === id)
+    if (i <= 0) return
+
+    const reordered = [list[i], ...list.slice(0, i), ...list.slice(i + 1)]
+
+    setTasks((prev) =>
+      prev.map((t) => {
+        const index = reordered.findIndex((item) => item.id === t.id)
+        return index !== -1 ? { ...t, order: index } : t
+      }),
+    )
+
+    reordered.slice(0, i + 1).forEach((t, index) => {
+      if (t.order !== index) {
+        patchTask(t.id, { order: index })
+      }
+    })
   }
 
   const moveToDate = (id: string, date: string) => {
@@ -499,8 +526,9 @@ export function useTasks(date: string = todayKey()) {
         .delete()
         .eq("date", date)
         .eq("done", true)
-        .then(({ error }) =>
-          error && console.warn("[tasks] clear completed", error),
+        .then(
+          ({ error }) =>
+            error && console.warn("[tasks] clear completed", error),
         )
     }
   }
@@ -523,6 +551,7 @@ export function useTasks(date: string = todayKey()) {
     toggle,
     remove,
     move,
+    moveToTop,
     moveToDate,
     addNote,
     updateNote,

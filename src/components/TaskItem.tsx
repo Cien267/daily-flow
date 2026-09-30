@@ -97,6 +97,7 @@ interface Props {
   onToggle: () => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
+  onMoveToTop: () => void
   onUpdate: (patch: Partial<Task>) => void
   onAddNote: (text: string) => void
   onUpdateNote: (noteId: string, text: string) => void
@@ -108,6 +109,7 @@ export default function TaskItem({
   onToggle,
   onRemove,
   onMove,
+  onMoveToTop,
   onUpdate,
   onAddNote,
   onUpdateNote,
@@ -128,7 +130,9 @@ export default function TaskItem({
   }
 
   return (
-    <li className="group rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-muted-foreground/25">
+    <li
+      className={`group rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-muted-foreground/25 ${task.pinned ? "border-primary bg-primary/30" : ""}`}
+    >
       <div className="flex items-center gap-3">
         <input
           type="checkbox"
@@ -153,7 +157,10 @@ export default function TaskItem({
         />
         <div className="flex items-center gap-1 md:opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
-            onClick={() => onUpdate({ pinned: !task.pinned })}
+            onClick={() => {
+              onUpdate({ pinned: !task.pinned })
+              if (!task.pinned) onMoveToTop()
+            }}
             title={task.pinned ? "Unpin routine" : "Mark as routine"}
             className={`rounded p-1 hover:bg-accent ${task.pinned ? "text-primary opacity-100" : "text-muted-foreground"}`}
           >
