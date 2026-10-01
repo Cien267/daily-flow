@@ -478,6 +478,7 @@ export function useTasks(date: string = todayKey()) {
     const picked = source.filter((t) => !existing.has(t.title.toLowerCase()))
     if (!picked.length) return 0
     let base = nextOrder(to)
+    picked.sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
     const clones: Task[] = picked.map((t) => ({
       ...t,
       id: uid(),
