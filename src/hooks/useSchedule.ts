@@ -65,13 +65,14 @@ export function useSchedule() {
       .order("position", { ascending: true })
     if (error) throw error
     if (!data.length && user) {
-      const rows = defaultSchedule.map((b, i) => blockToRow(b, user.id, i))
-      const { data: inserted, error: insErr } = await supabase
-        .from("schedule_blocks")
-        .insert(rows)
-        .select("*")
-      if (insErr) throw insErr
-      return (inserted as unknown as BlockRow[]).map(rowToBlock)
+      // const rows = defaultSchedule.map((b, i) => blockToRow(b, user.id, i))
+      // const { data: inserted, error: insErr } = await supabase
+      //   .from("schedule_blocks")
+      //   .insert(rows)
+      //   .select("*")
+      // if (insErr) throw insErr
+      // return (inserted as unknown as BlockRow[]).map(rowToBlock)
+      return []
     }
     return (data as unknown as BlockRow[]).map(rowToBlock)
   }
@@ -93,12 +94,13 @@ export function useSchedule() {
   ) => {
     const next =
       typeof updater === "function"
-        ? (updater as (p: ScheduleBlock[]) => ScheduleBlock[])(blocksRef.current)
+        ? (updater as (p: ScheduleBlock[]) => ScheduleBlock[])(
+            blocksRef.current,
+          )
         : updater
     blocksRef.current = next
     queryClient.setQueryData(queryKey, next)
   }
-
 
   const add = (block: ScheduleBlock) => {
     if (!user) return
@@ -141,6 +143,24 @@ export function useSchedule() {
         .delete()
         .eq("id", target.id)
         .then(({ error }) => error && console.warn("[schedule] remove", error))
+    }
+  }
+
+  const removeAll = () => {
+    const targets = blocks
+    setBlocksState([])
+    const ids = targets
+      .map((block) => block.id)
+      .filter((id): id is NonNullable<typeof id> => !!id)
+
+    if (ids.length > 0) {
+      supabase
+        .from("schedule_blocks")
+        .delete()
+        .in("id", ids)
+        .then(
+          ({ error }) => error && console.warn("[schedule] removeAll", error),
+        )
     }
   }
 
@@ -195,5 +215,15 @@ export function useSchedule() {
     return next
   }
 
-  return { blocks, loading, add, update, remove, move, reset, setBlocks }
+  return {
+    blocks,
+    loading,
+    add,
+    update,
+    remove,
+    removeAll,
+    move,
+    reset,
+    setBlocks,
+  }
 }
