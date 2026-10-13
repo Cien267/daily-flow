@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { MonitorPlay, X } from "lucide-react"
 import {
-  schedule,
   categoryConfig,
   energyMap,
   getCurrentBlockIndex,
@@ -10,8 +9,10 @@ import {
   getDurationMinutes,
   formatDuration,
 } from "@/data/schedule"
+import { useSchedule } from "@/hooks/useSchedule"
 
 export default function PipButton() {
+  const { blocks, loading } = useSchedule()
   const [pipOpen, setPipOpen] = useState(false)
   const pipWindowRef = useRef<Window | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -20,9 +21,10 @@ export default function PipButton() {
     const doc = pipWindowRef.current?.document
     if (!doc) return
 
-    const idx = getCurrentBlockIndex(schedule)
-    const block = idx >= 0 ? schedule[idx] : null
-    const nextBlock = idx >= 0 && idx < schedule.length - 1 ? schedule[idx + 1] : null
+    const idx = getCurrentBlockIndex(blocks)
+    const block = idx >= 0 ? blocks[idx] : null
+    const nextBlock =
+      idx >= 0 && idx < blocks.length - 1 ? blocks[idx + 1] : null
     const time = getCurrentTimeUTC7()
 
     if (!block) {
@@ -93,8 +95,10 @@ export default function PipButton() {
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:10px;color:#52525b;">Energy: ${energy.label}</span>
             <div style="display:flex;gap:2px;">
-              ${Array.from({ length: 5 }, (_, i) =>
-                `<div style="width:4px;height:10px;border-radius:1px;background:${i < Math.round(energy.percent / 20) ? color : "#27272a"};"></div>`
+              ${Array.from(
+                { length: 5 },
+                (_, i) =>
+                  `<div style="width:4px;height:10px;border-radius:1px;background:${i < Math.round(energy.percent / 20) ? color : "#27272a"};"></div>`,
               ).join("")}
             </div>
           </div>
@@ -102,11 +106,13 @@ export default function PipButton() {
         </div>
       </div>
     `
-  }, [])
+  }, [blocks])
 
   const openPip = useCallback(async () => {
     if (!("documentPictureInPicture" in window)) {
-      alert("Your browser doesn't support Document Picture-in-Picture. Try Chrome 116+.")
+      alert(
+        "Your browser doesn't support Document Picture-in-Picture. Try Chrome 116+.",
+      )
       return
     }
 
@@ -139,7 +145,7 @@ export default function PipButton() {
     } catch (e) {
       console.error("PiP failed:", e)
     }
-  }, [updatePipContent])
+  }, [blocks, updatePipContent])
 
   const closePip = useCallback(() => {
     pipWindowRef.current?.close()
@@ -155,6 +161,10 @@ export default function PipButton() {
     }
   }, [])
 
+  if (loading || !blocks || blocks.length === 0) {
+    return null
+  }
+
   return (
     <button
       onClick={pipOpen ? closePip : openPip}
@@ -165,7 +175,11 @@ export default function PipButton() {
       }`}
       title={pipOpen ? "Close PiP" : "Open Picture-in-Picture"}
     >
-      {pipOpen ? <X className="h-3.5 w-3.5" /> : <MonitorPlay className="h-3.5 w-3.5" />}
+      {pipOpen ? (
+        <X className="h-3.5 w-3.5" />
+      ) : (
+        <MonitorPlay className="h-3.5 w-3.5" />
+      )}
       {pipOpen ? "Close PiP" : "PiP"}
     </button>
   )
