@@ -49,6 +49,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { addMinutes, format, parse } from "date-fns"
 
 const energyOptions: EnergyLevel[] = [
   "peak",
@@ -75,8 +76,8 @@ const focusOptions: FocusType[] = [
 ]
 
 const empty: ScheduleBlock = {
-  start: "08:00",
-  end: "09:00",
+  start: "07:00",
+  end: "08:00",
   title: "",
   category: "work",
   description: "",
@@ -105,7 +106,17 @@ export default function Schedule() {
     setCurrentIdx(getCurrentBlockIndex(blocks))
   }, [blocks])
 
-  const openAdd = () => setEditing({ index: null, block: { ...empty } })
+  const openAdd = () => {
+    const block: ScheduleBlock = { ...empty }
+    if (blocks.length > 0) {
+      block.start = blocks[blocks.length - 1].end
+      block.end = format(
+        addMinutes(parse(block.start, "HH:mm", new Date()), 60),
+        "HH:mm",
+      )
+    }
+    setEditing({ index: null, block })
+  }
   const openEdit = (i: number) =>
     setEditing({ index: i, block: { ...blocks[i] } })
 
