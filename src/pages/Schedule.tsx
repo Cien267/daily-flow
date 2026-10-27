@@ -16,6 +16,7 @@ import {
   EnergyLevel,
   categoryConfig,
   ScheduleBlock,
+  getNextQuarterHourUTC7,
 } from "@/data/schedule"
 import { useSchedule } from "@/hooks/useSchedule"
 import TimelineBlock from "@/components/TimelineBlock"
@@ -110,11 +111,13 @@ export default function Schedule() {
     const block: ScheduleBlock = { ...empty }
     if (blocks.length > 0) {
       block.start = blocks[blocks.length - 1].end
-      block.end = format(
-        addMinutes(parse(block.start, "HH:mm", new Date()), 60),
-        "HH:mm",
-      )
+    } else {
+      block.start = getNextQuarterHourUTC7()
     }
+    block.end = format(
+      addMinutes(parse(block.start, "HH:mm", new Date()), 60),
+      "HH:mm",
+    )
     setEditing({ index: null, block })
   }
   const openEdit = (i: number) =>
