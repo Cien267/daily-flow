@@ -113,9 +113,9 @@ export function AppSidebar() {
                   {NAV_TABS.map((tab) => {
                     const Icon = itemIcons[tab.key];
                     return (
-                      <label
+                      <div
                         key={tab.key}
-                        className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent cursor-pointer"
+                        className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent"
                       >
                         <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <span className="flex-1 min-w-0">
@@ -129,9 +129,9 @@ export function AppSidebar() {
                         <Switch
                           checked={visible[tab.key]}
                           onCheckedChange={(v) => setVisibleTab(tab.key, v)}
-                          onClick={(e) => e.preventDefault()}
+                          aria-label={`Show ${tab.label}`}
                         />
-                      </label>
+                      </div>
                     );
                   })}
                 </div>
