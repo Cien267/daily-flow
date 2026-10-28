@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { NavSettingsProvider } from "@/hooks/useNavSettings";
 import AppLayout from "./components/AppLayout";
 import Schedule from "./pages/Schedule";
 import Pomodoro from "./pages/Pomodoro";
@@ -46,17 +47,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route element={<Protected />}>
-              <Route path="/" element={<Schedule />} />
-              <Route path="/pomodoro" element={<Pomodoro />} />
-              <Route path="/eye-care" element={<EyeCare />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/notes" element={<Notes />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <NavSettingsProvider>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route element={<Protected />}>
+                <Route path="/" element={<Schedule />} />
+                <Route path="/pomodoro" element={<Pomodoro />} />
+                <Route path="/eye-care" element={<EyeCare />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/notes" element={<Notes />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </NavSettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
