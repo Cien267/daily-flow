@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useTheme } from "next-themes";
 import {
   Calendar,
   Timer,
@@ -9,6 +10,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { ACCENTS, useAccentColor } from "@/hooks/useAccent";
 import {
   useNavSettings,
   NAV_TABS,
@@ -51,6 +53,8 @@ export function AppSidebar() {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
   const { visible, setVisibleTab } = useNavSettings();
+  const { theme, setTheme } = useTheme();
+  const { accent, setAccent } = useAccentColor();
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
 
