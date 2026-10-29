@@ -106,10 +106,60 @@ export function AppSidebar() {
                 <div className="mb-1 px-1">
                   <p className="text-sm font-medium">Settings</p>
                   <p className="text-xs text-muted-foreground">
-                    Show or hide sections in the menu.
+                    Theme, accent color and menu sections.
                   </p>
                 </div>
-                <div className="mt-2 space-y-1">
+
+                <p className="mt-3 mb-1.5 px-1 text-xs font-medium text-muted-foreground">
+                  Theme
+                </p>
+                <div className="grid grid-cols-3 gap-1">
+                  {(
+                    [
+                      { key: "light", label: "Light" },
+                      { key: "dark", label: "Dark" },
+                      { key: "system", label: "System" },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.key}
+                      onClick={() => setTheme(opt.key)}
+                      className={`rounded-md border px-2 py-1.5 text-xs transition-colors ${
+                        theme === opt.key
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="mt-3 mb-1.5 px-1 text-xs font-medium text-muted-foreground">
+                  Accent color
+                </p>
+                <div className="flex items-center gap-2 px-1">
+                  {ACCENTS.map((a) => (
+                    <button
+                      key={a.key}
+                      onClick={() => setAccent(a.key)}
+                      title={a.label}
+                      aria-label={`${a.label} accent`}
+                      aria-pressed={accent === a.key}
+                      className={`h-6 w-6 rounded-full transition-transform ${
+                        accent === a.key
+                          ? "scale-110 ring-2 ring-ring ring-offset-2 ring-offset-background"
+                          : "hover:scale-105"
+                      }`}
+                      style={{ backgroundColor: a.swatch }}
+                    />
+                  ))}
+                </div>
+
+                <p className="mt-3 mb-1.5 px-1 text-xs font-medium text-muted-foreground">
+                  Menu sections
+                </p>
+                <div className="space-y-1">
                   {NAV_TABS.map((tab) => {
                     const Icon = itemIcons[tab.key];
                     return (
