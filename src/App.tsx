@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -41,6 +42,13 @@ function Protected() {
 }
 
 const App = () => (
+  <ThemeProvider
+    attribute="class"
+    defaultTheme="dark"
+    enableSystem
+    disableTransitionOnChange
+    storageKey="settings.theme.v1"
+  >
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -64,6 +72,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

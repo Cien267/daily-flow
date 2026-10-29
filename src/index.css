@@ -6,6 +6,73 @@
 
 @layer base {
   :root {
+    /* Light theme (default) */
+    --background: 0 0% 100%;
+    --foreground: 228 14% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 228 14% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 228 14% 12%;
+
+    --primary: 225 73% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 228 12% 95%;
+    --secondary-foreground: 228 12% 25%;
+
+    --muted: 228 12% 96%;
+    --muted-foreground: 228 8% 45%;
+
+    --accent: 228 12% 95%;
+    --accent-foreground: 228 14% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 228 10% 91%;
+    --input: 228 10% 91%;
+    --ring: 225 73% 50%;
+
+    --radius: 0.625rem;
+
+    /* Category colors */
+    --cat-personal: 35 90% 55%;
+    --cat-growth: 255 80% 62%;
+    --cat-work: 215 70% 52%;
+    --cat-recovery: 40 60% 58%;
+    --cat-business: 155 70% 42%;
+    --cat-health: 145 65% 42%;
+    --cat-learning: 185 70% 45%;
+    --cat-work-flex: 220 15% 55%;
+    --cat-reflection: 275 55% 58%;
+    --cat-sleep: 225 40% 45%;
+
+    /* Energy bar colors */
+    --energy-peak: 145 70% 45%;
+    --energy-high: 80 65% 45%;
+    --energy-medium-high: 55 70% 50%;
+    --energy-medium: 40 60% 50%;
+    --energy-low: 25 50% 50%;
+    --energy-active: 340 75% 55%;
+    --energy-warmup: 30 70% 55%;
+    --energy-cooldown: 200 40% 55%;
+    --energy-recovery: 40 40% 55%;
+    --energy-sleep-prep: 250 30% 45%;
+    --energy-restore: 225 30% 35%;
+
+    --sidebar-background: 228 12% 98%;
+    --sidebar-foreground: 228 10% 35%;
+    --sidebar-primary: 225 73% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 228 12% 93%;
+    --sidebar-accent-foreground: 228 14% 15%;
+    --sidebar-border: 228 10% 91%;
+    --sidebar-ring: 225 73% 50%;
+  }
+
+  .dark {
     --background: 228 12% 8%;
     --foreground: 220 14% 92%;
 
@@ -33,8 +100,6 @@
     --border: 228 10% 18%;
     --input: 228 10% 18%;
     --ring: 225 73% 57%;
-
-    --radius: 0.625rem;
 
     /* Category colors */
     --cat-personal: 35 90% 60%;
@@ -69,6 +134,58 @@
     --sidebar-accent-foreground: 220 14% 92%;
     --sidebar-border: 228 10% 18%;
     --sidebar-ring: 225 73% 57%;
+  }
+
+  /* Accent color overrides (html[data-accent] = light, html.dark[data-accent] = dark) */
+  html[data-accent="blue"] {
+    --primary: 225 73% 50%;
+    --ring: 225 73% 50%;
+    --sidebar-primary: 225 73% 50%;
+  }
+  html.dark[data-accent="blue"] {
+    --primary: 225 73% 57%;
+    --ring: 225 73% 57%;
+    --sidebar-primary: 225 73% 57%;
+  }
+  html[data-accent="violet"] {
+    --primary: 262 65% 52%;
+    --ring: 262 65% 52%;
+    --sidebar-primary: 262 65% 52%;
+  }
+  html.dark[data-accent="violet"] {
+    --primary: 262 70% 65%;
+    --ring: 262 70% 65%;
+    --sidebar-primary: 262 70% 65%;
+  }
+  html[data-accent="emerald"] {
+    --primary: 158 70% 38%;
+    --ring: 158 70% 38%;
+    --sidebar-primary: 158 70% 38%;
+  }
+  html.dark[data-accent="emerald"] {
+    --primary: 158 65% 50%;
+    --ring: 158 65% 50%;
+    --sidebar-primary: 158 65% 50%;
+  }
+  html[data-accent="rose"] {
+    --primary: 350 75% 50%;
+    --ring: 350 75% 50%;
+    --sidebar-primary: 350 75% 50%;
+  }
+  html.dark[data-accent="rose"] {
+    --primary: 350 75% 60%;
+    --ring: 350 75% 60%;
+    --sidebar-primary: 350 75% 60%;
+  }
+  html[data-accent="amber"] {
+    --primary: 32 90% 42%;
+    --ring: 32 90% 42%;
+    --sidebar-primary: 32 90% 42%;
+  }
+  html.dark[data-accent="amber"] {
+    --primary: 38 90% 55%;
+    --ring: 38 90% 55%;
+    --sidebar-primary: 38 90% 55%;
   }
 }
 
