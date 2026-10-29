@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTheme } from "next-themes";
 import {
@@ -57,6 +58,14 @@ export function AppSidebar() {
   const { accent, setAccent } = useAccentColor();
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
+
+  // Keep the mobile browser / PWA status bar in sync with the theme.
+  const { resolvedTheme } = useTheme();
+  useEffect(() => {
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", resolvedTheme === "light" ? "#ffffff" : "#0f172a");
+  }, [resolvedTheme]);
 
   const items = NAV_TABS.filter((t) => visible[t.key]).map((t) => ({
     title: t.label,
