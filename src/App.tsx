@@ -42,6 +42,13 @@ function Protected() {
 }
 
 const App = () => (
+  <ThemeProvider
+    attribute="class"
+    defaultTheme="dark"
+    enableSystem
+    disableTransitionOnChange
+    storageKey="settings.theme.v1"
+  >
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
