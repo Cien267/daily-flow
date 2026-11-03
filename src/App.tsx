@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { NavSettingsProvider } from "@/hooks/useNavSettings";
 import AppLayout from "./components/AppLayout";
 import Schedule from "./pages/Schedule";
 import Pomodoro from "./pages/Pomodoro";
@@ -40,27 +42,37 @@ function Protected() {
 }
 
 const App = () => (
+  <ThemeProvider
+    attribute="class"
+    defaultTheme="dark"
+    enableSystem
+    disableTransitionOnChange
+    storageKey="settings.theme.v1"
+  >
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route element={<Protected />}>
-              <Route path="/" element={<Schedule />} />
-              <Route path="/pomodoro" element={<Pomodoro />} />
-              <Route path="/eye-care" element={<EyeCare />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/notes" element={<Notes />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <NavSettingsProvider>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route element={<Protected />}>
+                <Route path="/" element={<Schedule />} />
+                <Route path="/pomodoro" element={<Pomodoro />} />
+                <Route path="/eye-care" element={<EyeCare />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/notes" element={<Notes />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </NavSettingsProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
