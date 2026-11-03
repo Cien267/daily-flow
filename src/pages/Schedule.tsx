@@ -51,6 +51,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { addMinutes, format, parse } from "date-fns"
+import { toast } from "sonner"
 
 const energyOptions: EnergyLevel[] = [
   "peak",
@@ -125,6 +126,10 @@ export default function Schedule() {
 
   const save = () => {
     if (!editing) return
+    if (editing.block.start >= editing.block.end) {
+      toast.error("Start time must be before end time")
+      return
+    }
     if (editing.index === null) add(editing.block)
     else update(editing.index, editing.block)
     setEditing(null)
