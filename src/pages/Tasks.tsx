@@ -9,6 +9,7 @@ import {
   ListPlus,
   Eraser,
   Flag,
+  Trash,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -182,7 +183,7 @@ export default function Tasks() {
           disabled={isPastDay}
           placeholder={
             isPastDay
-              ? "Không thể thêm task cho ngày đã qua"
+              ? "Cannot add tasks to past days"
               : "Add a task for this day…"
           }
           value={title}
@@ -242,6 +243,11 @@ export default function Tasks() {
         >
           <ListPlus className="h-3.5 w-3.5" /> Bulk add
         </Button>
+        {dayTasks.length > 0 && (
+          <Button variant="ghost" size="sm" onClick={() => t.clearAll(date)}>
+            <Trash className="h-3.5 w-3.5" /> Clear all
+          </Button>
+        )}
         {doneCount > 0 && (
           <Button
             variant="ghost"

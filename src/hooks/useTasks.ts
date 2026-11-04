@@ -534,6 +534,18 @@ export function useTasks(date: string = todayKey()) {
     }
   }
 
+  const clearAll = (date: string) => {
+    const toDelete = tasksRef.current.filter((t) => t.date === date)
+    setTasks((prev) => prev.filter((t) => t.date !== date))
+    if (toDelete.length) {
+      supabase
+        .from("tasks")
+        .delete()
+        .eq("date", date)
+        .then(({ error }) => error && console.warn("[tasks] clear all", error))
+    }
+  }
+
   const activeDates = useMemo(() => {
     const set = new Set(dateRows ?? [])
     if (tasksRef.current.length) set.add(date)
@@ -560,5 +572,6 @@ export function useTasks(date: string = todayKey()) {
     carryOver,
     cloneFromDate,
     clearCompleted,
+    clearAll,
   }
 }
