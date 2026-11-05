@@ -126,7 +126,7 @@ export function AppSidebar() {
                       Theme, accent color and menu sections.
                     </DialogDescription>
                   </DialogHeader>
-                  <SettingsPanel itemIcons={itemIcons} />
+                  <SettingsPanel itemIcons={itemIcons} showHeader={false} />
                 </DialogContent>
               </Dialog>
             ) : (
