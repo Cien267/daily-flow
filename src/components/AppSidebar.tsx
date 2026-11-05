@@ -61,15 +61,13 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
-  const { visible, setVisibleTab } = useNavSettings();
-  const { theme, setTheme } = useTheme();
-  const { accent, setAccent } = useAccentColor();
+  const isMobile = useIsMobile();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
 
   // Keep the mobile browser / PWA status bar in sync with the theme.
   const { resolvedTheme } = useTheme();
-  useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute("content", resolvedTheme === "light" ? "#ffffff" : "#0f172a");
