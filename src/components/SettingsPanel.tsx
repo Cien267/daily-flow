@@ -14,9 +14,9 @@ import { Switch } from "@/components/ui/switch";
  * Kept presentation-only so both containers stay consistent.
  */
 export function SettingsPanel({
-  itemIcons: icons,
+  itemIcons,
 }: {
-  itemIcons: Record<NavTabKey, typeof SettingsIcon>;
+  itemIcons: Record<NavTabKey, LucideIcon>;
 }) {
   const { theme, setTheme } = useTheme();
   const { accent, setAccent } = useAccentColor();
