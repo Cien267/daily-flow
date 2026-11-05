@@ -27,15 +27,17 @@ export function SettingsPanel({
 
   return (
     <div className="space-y-4">
-      <div className="px-1">
-        <p className="flex items-center gap-2 text-sm font-medium">
-          <SettingsIcon className="h-4 w-4 text-muted-foreground" />
-          Settings
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Theme, accent color and menu sections.
-        </p>
-      </div>
+      {showHeader && (
+        <div className="px-1">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+            Settings
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Theme, accent color and menu sections.
+          </p>
+        </div>
+      )}
 
       <p className="mb-1.5 px-1 text-xs font-medium text-muted-foreground">
         Theme
