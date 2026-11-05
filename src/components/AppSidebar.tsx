@@ -63,6 +63,7 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { visible } = useNavSettings();
   const isActive = (path: string) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path);
 
