@@ -68,6 +68,7 @@ export function AppSidebar() {
 
   // Keep the mobile browser / PWA status bar in sync with the theme.
   const { resolvedTheme } = useTheme();
+  useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute("content", resolvedTheme === "light" ? "#ffffff" : "#0f172a");
