@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ACCENTS, useAccentColor } from "@/hooks/useAccent";
@@ -7,14 +8,6 @@ import {
   type NavTabKey,
 } from "@/hooks/useNavSettings";
 import { Switch } from "@/components/ui/switch";
-
-const itemIcons: Record<NavTabKey, typeof SettingsIcon> = {
-  schedule: SettingsIcon,
-  pomodoro: SettingsIcon,
-  "eye-care": SettingsIcon,
-  tasks: SettingsIcon,
-  notes: SettingsIcon,
-};
 
 /**
  * Shared settings body used by the desktop Popover and the mobile Dialog.
