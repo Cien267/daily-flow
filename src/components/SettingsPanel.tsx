@@ -85,7 +85,7 @@ export function SettingsPanel({
       </p>
       <div className="space-y-1">
         {NAV_TABS.map((tab) => {
-          const Icon = icons[tab.key];
+          const Icon = itemIcons[tab.key];
           return (
             <div
               key={tab.key}
