@@ -15,8 +15,11 @@ import { Switch } from "@/components/ui/switch";
  */
 export function SettingsPanel({
   itemIcons,
+  showHeader = true,
 }: {
   itemIcons: Record<NavTabKey, LucideIcon>;
+  /** Hide the inner header when the container already shows a title (mobile dialog). */
+  showHeader?: boolean;
 }) {
   const { theme, setTheme } = useTheme();
   const { accent, setAccent } = useAccentColor();
