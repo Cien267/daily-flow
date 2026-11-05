@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTheme } from "next-themes";
 import {
@@ -11,7 +11,8 @@ import {
   Settings,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { ACCENTS, useAccentColor } from "@/hooks/useAccent";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { SettingsPanel } from "@/components/SettingsPanel";
 import {
   useNavSettings,
   NAV_TABS,
@@ -29,8 +30,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const itemIcons: Record<NavTabKey, typeof Calendar> = {
   schedule: Calendar,
