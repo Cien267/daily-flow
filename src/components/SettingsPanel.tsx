@@ -1,13 +1,13 @@
-import type { LucideIcon } from "lucide-react";
-import { Settings as SettingsIcon } from "lucide-react";
-import { useTheme } from "next-themes";
-import { ACCENTS, useAccentColor } from "@/hooks/useAccent";
+import type { LucideIcon } from "lucide-react"
+import { Settings as SettingsIcon } from "lucide-react"
+import { useTheme } from "next-themes"
+import { ACCENTS, useAccentColor } from "@/hooks/useAccent"
 import {
   useNavSettings,
   NAV_TABS,
   type NavTabKey,
-} from "@/hooks/useNavSettings";
-import { Switch } from "@/components/ui/switch";
+} from "@/hooks/useNavSettings"
+import { Switch } from "@/components/ui/switch"
 
 /**
  * Shared settings body used by the desktop Popover and the mobile Dialog.
@@ -17,13 +17,13 @@ export function SettingsPanel({
   itemIcons,
   showHeader = true,
 }: {
-  itemIcons: Record<NavTabKey, LucideIcon>;
+  itemIcons: Record<NavTabKey, LucideIcon>
   /** Hide the inner header when the container already shows a title (mobile dialog). */
-  showHeader?: boolean;
+  showHeader?: boolean
 }) {
-  const { theme, setTheme } = useTheme();
-  const { accent, setAccent } = useAccentColor();
-  const { visible, setVisibleTab } = useNavSettings();
+  const { theme, setTheme } = useTheme()
+  const { accent, setAccent } = useAccentColor()
+  const { visible, setVisibleTab } = useNavSettings()
 
   return (
     <div className="space-y-4">
@@ -67,7 +67,7 @@ export function SettingsPanel({
       <p className="mb-1.5 px-1 text-xs font-medium text-muted-foreground">
         Accent color
       </p>
-      <div className="flex items-center gap-2 px-1">
+      <div className="flex items-center flex-wrap gap-3 px-1">
         {ACCENTS.map((a) => (
           <button
             key={a.key}
@@ -90,7 +90,7 @@ export function SettingsPanel({
       </p>
       <div className="space-y-1">
         {NAV_TABS.map((tab) => {
-          const Icon = itemIcons[tab.key];
+          const Icon = itemIcons[tab.key]
           return (
             <div
               key={tab.key}
@@ -109,9 +109,9 @@ export function SettingsPanel({
                 aria-label={`Show ${tab.label}`}
               />
             </div>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 }

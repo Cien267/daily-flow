@@ -5,7 +5,21 @@
  */
 import { useEffect, useState } from "react"
 
-export type AccentKey = "blue" | "violet" | "emerald" | "rose" | "amber"
+export type AccentKey =
+  | "blue"
+  | "violet"
+  | "emerald"
+  | "rose"
+  | "amber"
+  | "pink"
+  | "cyan"
+  | "indigo"
+  | "teal"
+  | "orange"
+  | "lime"
+  | "slate"
+  | "fuchsia"
+  | "sky"
 
 export const ACCENTS: { key: AccentKey; label: string; swatch: string }[] = [
   { key: "blue", label: "Blue", swatch: "hsl(225 73% 55%)" },
@@ -13,6 +27,15 @@ export const ACCENTS: { key: AccentKey; label: string; swatch: string }[] = [
   { key: "emerald", label: "Emerald", swatch: "hsl(158 65% 45%)" },
   { key: "rose", label: "Rose", swatch: "hsl(350 75% 55%)" },
   { key: "amber", label: "Amber", swatch: "hsl(38 90% 50%)" },
+  { key: "pink", label: "Pink", swatch: "hsl(330 80% 70%)" },
+  { key: "cyan", label: "Cyan", swatch: "hsl(189 85% 45%)" },
+  { key: "indigo", label: "Indigo", swatch: "hsl(243 65% 60%)" },
+  { key: "teal", label: "Teal", swatch: "hsl(174 65% 40%)" },
+  { key: "orange", label: "Orange", swatch: "hsl(24 90% 55%)" },
+  { key: "lime", label: "Lime", swatch: "hsl(85 65% 45%)" },
+  { key: "slate", label: "Slate", swatch: "hsl(215 20% 50%)" },
+  { key: "fuchsia", label: "Fuchsia", swatch: "hsl(292 70% 55%)" },
+  { key: "sky", label: "Sky", swatch: "hsl(199 85% 55%)" },
 ]
 
 export const DEFAULT_ACCENT: AccentKey = "blue"

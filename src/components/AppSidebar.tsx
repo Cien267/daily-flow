@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react"
+import { NavLink, useLocation } from "react-router-dom"
+import { useTheme } from "next-themes"
 import {
   Calendar,
   Timer,
@@ -9,15 +9,15 @@ import {
   StickyNote,
   LogOut,
   Settings,
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { SettingsPanel } from "@/components/SettingsPanel";
+} from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { SettingsPanel } from "@/components/SettingsPanel"
 import {
   useNavSettings,
   NAV_TABS,
   type NavTabKey,
-} from "@/hooks/useNavSettings";
+} from "@/hooks/useNavSettings"
 import {
   Sidebar,
   SidebarContent,
@@ -29,8 +29,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+} from "@/components/ui/sidebar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Dialog,
   DialogContent,
@@ -38,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 
 const itemIcons: Record<NavTabKey, typeof Calendar> = {
   schedule: Calendar,
@@ -46,7 +50,7 @@ const itemIcons: Record<NavTabKey, typeof Calendar> = {
   "eye-care": Eye,
   tasks: CheckSquare,
   notes: StickyNote,
-};
+}
 
 const itemUrls: Record<NavTabKey, string> = {
   schedule: "/",
@@ -54,39 +58,44 @@ const itemUrls: Record<NavTabKey, string> = {
   "eye-care": "/eye-care",
   tasks: "/tasks",
   notes: "/notes",
-};
+}
 
 export function AppSidebar() {
-  const { state, setOpenMobile } = useSidebar();
-  const collapsed = state === "collapsed";
-  const { pathname } = useLocation();
-  const { user, signOut } = useAuth();
-  const isMobile = useIsMobile();
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const { visible } = useNavSettings();
+  const { state, setOpenMobile } = useSidebar()
+  const collapsed = state === "collapsed"
+  const { pathname } = useLocation()
+  const { user, signOut } = useAuth()
+  const isMobile = useIsMobile()
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const { visible } = useNavSettings()
   const isActive = (path: string) =>
-    path === "/" ? pathname === "/" : pathname.startsWith(path);
+    path === "/" ? pathname === "/" : pathname.startsWith(path)
 
   // Keep the mobile browser / PWA status bar in sync with the theme.
-  const { resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme()
   useEffect(() => {
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", resolvedTheme === "light" ? "#ffffff" : "#0f172a");
-  }, [resolvedTheme]);
+      ?.setAttribute(
+        "content",
+        resolvedTheme === "light" ? "#ffffff" : "#0f172a",
+      )
+  }, [resolvedTheme])
 
   const items = NAV_TABS.filter((t) => visible[t.key]).map((t) => ({
     title: t.label,
     url: itemUrls[t.key],
     icon: itemIcons[t.key],
-  }));
+  }))
 
   // When the active page is hidden, keep it highlighted via route anyway.
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="pt-[env(safe-area-inset-top)]">
         <SidebarGroup>
-          <SidebarGroupLabel>{collapsed ? "" : "Focus Suite"}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {collapsed ? "" : "Focus Suite"}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -119,7 +128,7 @@ export function AppSidebar() {
                     <span>Settings</span>
                   </SidebarMenuButton>
                 </DialogTrigger>
-                <DialogContent className="max-h-[85dvh] overflow-y-auto p-4">
+                <DialogContent className="max-h-[85dvh] overflow-y-auto p-4 max-w-[90%]">
                   <DialogHeader>
                     <DialogTitle>Settings</DialogTitle>
                     <DialogDescription>
@@ -159,5 +168,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

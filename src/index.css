@@ -187,6 +187,105 @@
     --ring: 38 90% 55%;
     --sidebar-primary: 38 90% 55%;
   }
+  /* New accent colors */
+  html[data-accent="pink"] {
+    --primary: 330 80% 60%;
+    --ring: 330 80% 60%;
+    --sidebar-primary: 330 80% 60%;
+  }
+  html.dark[data-accent="pink"] {
+    --primary: 330 80% 70%;
+    --ring: 330 80% 70%;
+    --sidebar-primary: 330 80% 70%;
+  }
+
+  html[data-accent="cyan"] {
+    --primary: 189 85% 40%;
+    --ring: 189 85% 40%;
+    --sidebar-primary: 189 85% 40%;
+  }
+  html.dark[data-accent="cyan"] {
+    --primary: 189 85% 55%;
+    --ring: 189 85% 55%;
+    --sidebar-primary: 189 85% 55%;
+  }
+
+  html[data-accent="indigo"] {
+    --primary: 243 65% 52%;
+    --ring: 243 65% 52%;
+    --sidebar-primary: 243 65% 52%;
+  }
+  html.dark[data-accent="indigo"] {
+    --primary: 243 65% 68%;
+    --ring: 243 65% 68%;
+    --sidebar-primary: 243 65% 68%;
+  }
+
+  html[data-accent="teal"] {
+    --primary: 174 65% 35%;
+    --ring: 174 65% 35%;
+    --sidebar-primary: 174 65% 35%;
+  }
+  html.dark[data-accent="teal"] {
+    --primary: 174 65% 50%;
+    --ring: 174 65% 50%;
+    --sidebar-primary: 174 65% 50%;
+  }
+
+  html[data-accent="orange"] {
+    --primary: 24 90% 48%;
+    --ring: 24 90% 48%;
+    --sidebar-primary: 24 90% 48%;
+  }
+  html.dark[data-accent="orange"] {
+    --primary: 24 90% 60%;
+    --ring: 24 90% 60%;
+    --sidebar-primary: 24 90% 60%;
+  }
+
+  html[data-accent="lime"] {
+    --primary: 85 65% 35%;
+    --ring: 85 65% 35%;
+    --sidebar-primary: 85 65% 35%;
+  }
+  html.dark[data-accent="lime"] {
+    --primary: 85 65% 55%;
+    --ring: 85 65% 55%;
+    --sidebar-primary: 85 65% 55%;
+  }
+
+  html[data-accent="slate"] {
+    --primary: 215 20% 45%;
+    --ring: 215 20% 45%;
+    --sidebar-primary: 215 20% 45%;
+  }
+  html.dark[data-accent="slate"] {
+    --primary: 215 20% 65%;
+    --ring: 215 20% 65%;
+    --sidebar-primary: 215 20% 65%;
+  }
+
+  html[data-accent="fuchsia"] {
+    --primary: 292 70% 45%;
+    --ring: 292 70% 45%;
+    --sidebar-primary: 292 70% 45%;
+  }
+  html.dark[data-accent="fuchsia"] {
+    --primary: 292 70% 65%;
+    --ring: 292 70% 65%;
+    --sidebar-primary: 292 70% 65%;
+  }
+
+  html[data-accent="sky"] {
+    --primary: 199 85% 45%;
+    --ring: 199 85% 45%;
+    --sidebar-primary: 199 85% 45%;
+  }
+  html.dark[data-accent="sky"] {
+    --primary: 199 85% 60%;
+    --ring: 199 85% 60%;
+    --sidebar-primary: 199 85% 60%;
+  }
 }
 
 @layer base {
